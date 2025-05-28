@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts_app.apps.AccountsAppConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -121,7 +122,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# プロジェクト全体の静的ファイルを探す
+STATICFILES_DIRS = [ BASE_DIR / 'static' ]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# User Model
+AUTH_USER_MODEL = 'accounts_app.CustomUser'
