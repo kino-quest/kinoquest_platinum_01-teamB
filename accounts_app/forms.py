@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.forms import User, UserCreationForm
+from django.contrib.auth.forms import UserCreationForm
+
+User = get_user_model()
 
 # 新規登録処理
 class SignupForm(UserCreationForm):
@@ -14,7 +16,6 @@ class SignupForm(UserCreationForm):
             'address',
             'phone_number',
             'email',
-            'password',
         ]
 
         widgets = {
@@ -92,9 +93,9 @@ class SignupForm(UserCreationForm):
 
 # ログイン処理
 class LoginForm(forms.Form):
-    email = forms.EmailField(
+    username = forms.CharField(
         label='メールアドレス',
-        widget=forms.EmailInput(attrs={
+        widget=forms.TextInput(attrs={
             'class': '''
                 mt-1
                 block
@@ -109,7 +110,7 @@ class LoginForm(forms.Form):
                 focus:border-indigo-500
                 sm:text-sm
             ''',
-            'placeholder': '例 : your_email@example.com'
+            'placeholder': '名前を入力してください'
         })
     )
     password = forms.CharField(
@@ -140,19 +141,14 @@ class LoginForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        email = cleaned_data.get("email")
+        username = cleaned_data.get("username")
         password = cleaned_data.get("password")
 
-        if email and password:
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                raise forms.ValidationError("メールアドレスまたはパスワードが正しくありません。")
-
-            self.user = authenticate(username=user.username, password=password)
+        if username and password:
+            self.user = authenticate(username=username, password=password)
 
             if self.user is None:
-                raise forms.ValidationError("メールアドレスまたはパスワードが正しくありません。")
+                raise forms.ValidationError("名前またはパスワードが正しくありません。")
 
         return cleaned_data
 
