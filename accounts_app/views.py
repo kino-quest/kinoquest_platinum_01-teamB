@@ -1,8 +1,8 @@
 from django.contrib.auth import login
 from django.shortcuts import redirect, render
-from .forms import SignupForm
+from .forms import LoginForm, SignupForm
 
-# Create your views here.
+# 新規登録処理
 def signup_view(request):
     print("signup")
 
@@ -19,3 +19,10 @@ def signup_view(request):
     else:
         signup_form = SignupForm()
     return render(request, 'accounts_app/signup.html', {'signup_form': signup_form})
+
+# ログイン処理
+def login_view(request):
+    print("login")
+
+    login_form = LoginForm()
+    return render(request, 'accounts_app/login.html', {'login_form': login_form})
