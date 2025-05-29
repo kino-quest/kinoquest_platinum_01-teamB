@@ -1,8 +1,24 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 
 User = get_user_model()
+
+# 共通のCSSクラス
+COMMON_INPUT_CLASS = '''
+    mt-1
+    block
+    w-full
+    px-3
+    py-2
+    border
+    border-gray-300
+    rounded-md shadow-sm
+    focus:outline-none
+    focus:ring-indigo-500
+    focus:border-indigo-500
+    sm:text-sm
+'''
 
 # 新規登録処理
 class SignupForm(UserCreationForm):
@@ -26,22 +42,6 @@ class SignupForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         # 「：」をなしにする
         self.label_suffix = ''
-
-        # 共通のCSSクラス
-        common_class = '''
-            mt-1
-            block
-            w-full
-            px-3
-            py-2
-            border
-            border-gray-300
-            rounded-md shadow-sm
-            focus:outline-none
-            focus:ring-indigo-500
-            focus:border-indigo-500
-            sm:text-sm
-        '''
         
         field_settings = {
             'username': '名前を入力してください',
@@ -65,14 +65,14 @@ class SignupForm(UserCreationForm):
             # password フィールドは UserCreationForm が生成するためチェックする
             if field_name in self.fields:
                 field = self.fields[field_name]
-                field.widget.attrs['class'] = common_class
+                field.widget.attrs['class'] = COMMON_INPUT_CLASS
                 field.widget.attrs['placeholder'] = placeholder
 
         # password1 と password2 にも適用する
         for field_name, placeholder in password_fields.items():
             if field_name in self.fields:
                 field = self.fields[field_name]
-                field.widget.attrs['class'] = common_class
+                field.widget.attrs['class'] = COMMON_INPUT_CLASS
                 field.widget.attrs['placeholder'] = placeholder
         
         self.fields['username'].label = '名前'
@@ -94,42 +94,16 @@ class SignupForm(UserCreationForm):
 # ログイン処理
 class LoginForm(forms.Form):
     username = forms.CharField(
-        label='メールアドレス',
+        label='名前',
         widget=forms.TextInput(attrs={
-            'class': '''
-                mt-1
-                block
-                w-full
-                px-3
-                py-2
-                border
-                border-gray-300
-                rounded-md shadow-sm
-                focus:outline-none
-                focus:ring-indigo-500
-                focus:border-indigo-500
-                sm:text-sm
-            ''',
+            'class': COMMON_INPUT_CLASS,
             'placeholder': '名前を入力してください'
         })
     )
     password = forms.CharField(
         label='パスワード',
         widget=forms.PasswordInput(attrs={
-            'class': '''
-                mt-1
-                block
-                w-full
-                px-3
-                py-2
-                border
-                border-gray-300
-                rounded-md shadow-sm
-                focus:outline-none
-                focus:ring-indigo-500
-                focus:border-indigo-500
-                sm:text-sm
-            ''',
+            'class': COMMON_INPUT_CLASS,
             'placeholder': 'パスワードを入力してください'
         })
     )
@@ -152,6 +126,79 @@ class LoginForm(forms.Form):
 
         return cleaned_data
 
-    
     def get_user(self):
         return self.user
+
+# 編集処理
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = [
+            'profile_image',
+            'username',
+            'gender',
+            'date_of_birth',
+            'postal_code',
+            'address',
+            'phone_number',
+            'email',
+        ]
+
+        widgets = {
+            'gender': forms.RadioSelect,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 「：」をなしにする
+        self.label_suffix = ''
+
+        field_settings = {
+            'profile_image': '画像',
+            'username': '名前を入力してください',
+            'gender': '性別',
+            'date_of_birth': '例 : 1990-01-01',
+            'postal_code': '例 : 123-4567',
+            'address': '住所',
+            'phone_number': '例 : 090-1234-5678',
+            'email': '例 : your_email@example.com',
+            'password': 'パスワードを入力してください',
+        }
+
+        for field_name, placeholder in field_settings.items():
+            # password フィールドは UserCreationForm が生成するためチェックする
+            if field_name in self.fields:
+                field = self.fields[field_name]
+                field.widget.attrs['class'] = COMMON_INPUT_CLASS
+                field.widget.attrs['placeholder'] = placeholder
+        
+        self.fields['profile_image'].label = '画像'
+        self.fields['username'].label = '名前'
+        self.fields['gender'].label = '性別'
+        self.fields['gender'].widget.attrs['class'] = 'flex items-center space-x-4'
+        self.fields['gender'].choices = [('M', '男性'), ('F', '女性')]
+        self.fields['date_of_birth'].label = '生年月日'
+        self.fields['postal_code'].label = '郵便番号'
+        self.fields['address'].label = '住所'
+        self.fields['phone_number'].label = '電話番号'
+        self.fields['email'].label = 'メール'
+
+#編集 PasswordChangeFormをカスタマイズ(オーバーライド)
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.label_suffix = ''
+
+        field_settings = {
+            'old_password': '現在のパスワードを入力してください',
+            'new_password1': '新しいパスワードを入力してください',
+            'new_password2': '確認用の新しいパスワードを入力してください',
+        }
+
+        for field_name, placeholder in field_settings.items():
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = COMMON_INPUT_CLASS
+            field.widget.attrs['placeholder'] = placeholder
+
+        self.fields['old_password'].label = '現在のパスワード'
+        self.fields['new_password2'].label = '新しいパスワード確認'

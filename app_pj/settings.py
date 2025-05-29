@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'accounts_app.apps.AccountsAppConfig',
+    'dashboard_app.apps.DashboardAppConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -132,3 +133,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # User Model
 AUTH_USER_MODEL = 'accounts_app.CustomUser'
+
+# ログインが必要なビューにアクセスしたとき、未ログインユーザーをリダイレクトする先のURL 
+LOGIN_URL = '/accounts_app/login'
