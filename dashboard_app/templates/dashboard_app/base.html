@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <title>{% block title %}スノトラ{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="icon" href="{% static 'images/favicon.png' %} " type="image/png">
+    </head>
+    <body class="flex flex-col min-h-screen">
+        <header class="header bg-blue-100 p-4 flex items-center justify-start h-20 md:h-24">
+            <div class="header__logo-box flex items-center mr-8">
+                <img src="{% static 'images/logo.png' %}" class="header__logo h-32 w-auto" alt="スノトラのロゴ画像です" />
+            </div>
+            <nav class="flex items-center space-x-54 text-lg font-medium text-gray-700 mx-auto">
+                <a href="#" class="hover:text-gray-500 transition duration-200">探す</a>
+                <a href="#" class="hover:text-gray-500 transition duration-200">履歴</a>
+                <a href="{% url 'user_setting' %}" class="hover:text-gray-500 transition duration-200">
+                    <img src="{% static 'images/favicon.png' %}" alt="ユーザーアイコン" class="h-10 w-10 rounded-full cursor-pointer hover:opacity-80 transition duration-200">
+                </a>
+            </nav>
+        </header>
+        <main class="bg-gray-100 flex-grow">{% block content %}{% endblock %}</main>
+        <footer class="footer bg-blue-100 text-gray-700 p-8">
+            <div class="footer__text-box max-w-7xl mx-auto text-center">
+                <ul class="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-8 text-sm">
+                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">運営会社</li>
+                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">利用規約</li>
+                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">プライバシーポリシー</li>
+                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">キャンセルポリシー</li>
+                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">お問いわせ</li>
+                </ul>
+            </div>
+        </footer>
+    </body>
+</html>
