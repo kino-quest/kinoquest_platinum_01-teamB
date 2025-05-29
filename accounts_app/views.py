@@ -1,4 +1,4 @@
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect, render
 from .forms import LoginForm, SignupForm
 
@@ -24,5 +24,23 @@ def signup_view(request):
 def login_view(request):
     print("login")
 
-    login_form = LoginForm()
+    if request.method == 'POST':
+        print("------------POSTで受け取ったよ-------------------")
+        login_form = LoginForm(request.POST)
+        if login_form.is_valid():
+            print("------------login_valid()-------------------")
+            username = login_form.cleaned_data['username']
+            password = login_form.cleaned_data['password']
+
+            # 認証処理
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                print("------------ログイン成功-------------------")
+                login(request, user)
+                return redirect('login')
+            else:
+                print("ログイン失敗")
+                login_form.add_error(None, 'メールアドレスまたはパスワードが違います')
+    else:
+        login_form = LoginForm()
     return render(request, 'accounts_app/login.html', {'login_form': login_form})

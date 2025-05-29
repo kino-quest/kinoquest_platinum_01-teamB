@@ -16,12 +16,11 @@ class CustomUser(AbstractUser):
     postal_code = models.CharField(max_length=10, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
-
-    # emailを一意にしてログインIDとして使いたい場合
     email = models.EmailField(unique=True)
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']  # usernameも残しておく
 
+    @property
+    def full_name(self):
+        return self.username
     def __str__(self):
         return f"{self.role.title()} - {self.full_name}"
 
