@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from .forms import CustomPasswordChangeForm, LoginForm, SignupForm, UserUpdateForm
 
 # 新規登録処理
-def signup_view(request):
+def student_signup_view(request):
     # 新規登録フォームが送られてきた時
     if request.method == 'POST':
         print("post")
