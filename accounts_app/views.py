@@ -2,23 +2,48 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from .forms import CustomPasswordChangeForm, LoginForm, SignupForm, UserUpdateForm
+from .forms import InstructorSignupForm, CustomPasswordChangeForm, LoginForm, StudentSignupForm, UserUpdateForm
+from .models import CustomUser
 
-# 新規登録処理
+# 新規登録処理 受講者用
 def student_signup_view(request):
     # 新規登録フォームが送られてきた時
     if request.method == 'POST':
-        print("post")
-        signup_form = SignupForm(request.POST)
+        signup_form = StudentSignupForm(request.POST)
 
         if signup_form.is_valid():
-            print("is_valid")
-            user = signup_form.save()
+            # ユーザーを保存して、'user' 変数に代入する
+            user = signup_form.save(commit=False) # 保存は確定させない
+            # ロールを設定する
+            user.role = CustomUser.Role.STUDENT
+            # 変更を DB へ保存する
+            user.save()
+            # ログイン処理
             login(request, user)
             return redirect('dashboard')
     else:
-        signup_form = SignupForm()
-    return render(request, 'accounts_app/signup.html', {'signup_form': signup_form})
+        signup_form = StudentSignupForm()
+    return render(request, 'accounts_app/student_signup.html', {'signup_form': signup_form})
+
+# 新規登録処理 インストラクター用
+def instructor_signup_view(request):
+    # 新規登録フォームが送られてきた時
+    if request.method == 'POST':
+        signup_form = InstructorSignupForm(request.POST)
+
+        if signup_form.is_valid():
+            # ユーザーを保存して、'user' 変数に代入する
+            user = signup_form.save(commit=False) # 保存は確定させない
+            # ロールを設定する
+            user.role = CustomUser.Role.INSTRUCTOR
+            # 変更を DB へ保存する
+            user.save()
+            # ログイン処理
+            login(request, user)
+            return redirect('dashboard')
+    else:
+        signup_form = InstructorSignupForm()
+    return render(request, 'accounts_app/instructor_signup.html', {'signup_form': signup_form})
 
 # ログイン処理
 def login_view(request):
