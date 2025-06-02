@@ -2,8 +2,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from .forms import InstructorSignupForm, CustomPasswordChangeForm, LoginForm, StudentSignupForm, UserUpdateForm
-from .models import CustomUser
+from .forms import InstructorProfileForm, InstructorSignupForm, CustomPasswordChangeForm, LoginForm, StudentSignupForm, UserUpdateForm
+from .models import CustomUser, InstructorProfile
 
 # 新規登録処理 受講者用
 def student_signup_view(request):
@@ -96,10 +96,8 @@ def logout_view(request):
     user = request.user
     is_student = user.is_student
     is_instructor = user.is_instructor
-
     # ログアウト処理
     logout(request)
-
     # ユーザーの条件でリダイレクトさせる
     if is_student:
         return redirect('student_login')
@@ -143,33 +141,62 @@ def student_setting(request):
 # ユーザー情報設定 / 更新 - インストラクター用
 @login_required
 def instructor_setting(request):
+    # インストラクター以外のユーザーはアクセス拒否
+    if not request.user.is_instructor:
+        messages.error(request, "インストラクターとしてログインしてください。")
+        return redirect('dashboard')
+
+    # ユーザーのInstructorProfileインスタンスを取得、存在しない場合は作成
+    try:
+        instructor_profile = request.user.instructor_profile
+    except InstructorProfile.DoesNotExist:
+        # プロファイルが存在しない場合は新しく作成し、保存
+        instructor_profile = InstructorProfile(user=request.user)
+        instructor_profile.save()
+
     # 「更新ボタン」が押された時
     if request.method == 'POST':
+        # フォームのインスタンス化(POSTデータと既存のインスタンスを紐付け)
         user_form = UserUpdateForm(request.POST, instance=request.user)
         password_form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        instructor_profile_form = InstructorProfileForm(request.POST, instance=instructor_profile)
 
+        # 各フォームのバリデーション結果
         user_valid = user_form.is_valid()
         password_valid = password_form.is_valid()
+        instructor_profile_valid = instructor_profile_form.is_valid()
 
-        if user_valid:
+        # 全てのフォームが有効であれば保存処理をする
+        if user_valid and password_valid and instructor_profile_valid:
             user_form.save()
-        
-        if password_valid:
-            user = password_form.save()
-            #パスワード変更後にログアウトされるのを防ぐ
-            update_session_auth_hash(request, user)
-        if not user_valid and not password_valid:
-            messages.error(request, '入力内容に誤りがあります。確認してください')
+            password_form.save()
+            instructor_profile_form.save()
 
-        # どちらも成功していたら「instructor_settings」へリダイレクト
-        if user_valid and password_valid:
+            #パスワード変更後にログアウトされるのを防ぐ
+            update_session_auth_hash(request, password_form.user)
             messages.success(request, 'ユーザー情報を更新しました')
             return redirect('instructor_setting')
-        
-    user_form = UserUpdateForm(instance=request.user)
-    password_form = CustomPasswordChangeForm(user=request.user)
+        else:
+            # フォームのどこかにエラーがあればメッセージを表示させる
+            messages.error(request, '入力内容に誤りがあります。確認してください')
+            # エラーがある場合でも、フォームインスタンスを渡してエラーメッセージを表示させる
+            params = {
+                'user_form': user_form,
+                'password_form': password_form,
+                'instructor_profile_form': instructor_profile_form,
+            }
+            return render(request, 'accounts_app/instructor_setting.html', params)
+
+    else:
+        # GET リクエストの場合、既存のデータでフォームを初期化する 
+        user_form = UserUpdateForm(instance=request.user)
+        password_form = CustomPasswordChangeForm(user=request.user)
+        instructor_profile_form = InstructorProfileForm(instance=instructor_profile)
+    
+    # テンプレートに渡すパラメータ
     params = {
         'user_form': user_form,
         'password_form': password_form,
+        'instructor_profile_form': instructor_profile_form,
     }
     return render(request, 'accounts_app/instructor_setting.html', params)

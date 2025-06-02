@@ -49,14 +49,6 @@
                 {% endif %}
             </div>
             <div>
-                {{ user_form.postal_code.label_tag}}
-                {{ user_form.postal_code }}
-            </div>
-            <div>
-                {{ user_form.address.label_tag}}
-                {{ user_form.address }}
-            </div>
-            <div>
                 {{ user_form.phone_number.label_tag}}
                 {{ user_form.phone_number }}
             </div>
@@ -64,6 +56,9 @@
                 {{ user_form.email.label_tag}}
                 {{ user_form.email }}
             </div>
+
+            <hr class="my-6 border-gray-300">
+
             <div>
                 {{ password_form.old_password.label_tag}}
                 {{ password_form.old_password }}
@@ -84,6 +79,84 @@
                     </ul>
                 {% endif %}
             </div>
+
+            <hr class="my-6 border-gray-300">
+            
+            <div>
+                {{ instructor_profile_form.self_introduction.label_tag }}
+                {{ instructor_profile_form.self_introduction }}
+                {% if instructor_profile_form.self_introduction.errors %}
+                    <ul class="errorlist text-red-500 text-sm mt-1">
+                    {% for error in instructor_profile_form.self_introduction.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <p class="font-medium text-gray-700">レッスン可能</p>
+                <label class="inline-flex items-center mr-4">
+                    {{ instructor_profile_form.skill_ski }}
+                    <span class="ml-2">スキー</span>
+                </label>
+                <label class="inline-flex items-center">
+                    {{ instructor_profile_form.skill_snowboard }}
+                    <span class="ml-2">スノーボード</span>
+                </label>
+                {% if instructor_profile_form.skill_ski.errors or instructor_profile_form.skill_snowboard.errors %}
+                    <ul class="errorlist text-red-500 text-sm mt-1">
+                    {% for error in instructor_profile_form.skill_ski.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    {% for error in instructor_profile_form.skill_snowboard.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <p class="font-medium text-gray-700">対応言語</p>
+                <label class="inline-flex items-center mr-4">
+                    {{ instructor_profile_form.spoken_japanese }}
+                    <span class="ml-2">日本語</span>
+                </label>
+                <label class="inline-flex items-center mr-4">
+                    {{ instructor_profile_form.spoken_english }}
+                    <span class="ml-2">英語</span>
+                </label>
+                <label class="inline-flex items-center mr-4">
+                    {{ instructor_profile_form.spoken_chinese }}
+                    <span class="ml-2">中国語</span>
+                </label>
+                {% if instructor_profile_form.spoken_japanese.errors or instructor_profile_form.spoken_english.errors or instructor_profile_form.spoken_chinese.errors %}
+                    <ul class="errorlist text-red-500 text-sm mt-1">
+                    {% for error in instructor_profile_form.spoken_japanese.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    {% for error in instructor_profile_form.spoken_english.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    {% for error in instructor_profile_form.spoken_chinese.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div>
+                {{ instructor_profile_form.spoken_other.label_tag }}
+                {{ instructor_profile_form.spoken_other }}
+                {% if instructor_profile_form.spoken_other.errors %}
+                    <ul class="errorlist text-red-500 text-sm mt-1">
+                    {% for error in instructor_profile_form.spoken_other.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <hr class="my-6 border-gray-300">
+
             <div class="pt-8 flex space-x-4">
                 <a 
                 href="{% url 'dashboard' %}"

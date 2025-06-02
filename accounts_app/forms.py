@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
+from .models import InstructorProfile
 
 User = get_user_model()
 
@@ -248,7 +249,7 @@ class UserUpdateForm(forms.ModelForm):
         self.fields['phone_number'].label = '電話番号'
         self.fields['email'].label = 'メール'
 
-#編集 PasswordChangeFormをカスタマイズ(オーバーライド)
+# 編集 PasswordChangeFormをカスタマイズ(オーバーライド)
 class CustomPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -267,3 +268,44 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
         self.fields['old_password'].label = '現在のパスワード'
         self.fields['new_password2'].label = '新しいパスワード確認'
+
+# 編集
+class InstructorProfileForm(forms.ModelForm):
+    class Meta:
+        model = InstructorProfile
+        fields = [
+            'self_introduction',
+            'skill_ski',
+            'skill_snowboard',
+            'spoken_japanese',
+            'spoken_english',
+            'spoken_chinese',
+            'spoken_other',
+        ]
+        widgets = {
+            'self_introduction': forms.Textarea(attrs={'rows': 4})
+        }
+        labels = {
+            'self_introduction': 'インストラクター紹介',
+            'skill_ski': 'レッスン可能な種目：スキー',
+            'skill_snowboard': 'レッスン可能な種目：スノーボード',
+            'spoken_japanese': '話せる言語：日本語',
+            'spoken_english': '話せる言語：英語',
+            'spoken_chinese': '話せる言語：中国語',
+            'spoken_other': '話せる言語：その他',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.label_suffix = ''
+
+        for field_name, field in self.fields.items():
+            # テキスト入力とテキストエリアに共通クラスを適用
+            if isinstance(field.widget, (forms.TextInput, forms.Textarea)):
+                field.widget.attrs['class'] = COMMON_INPUT_CLASS
+            # チェックボックスには別のクラスを適用
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = 'form-checkbox h-5 w-5 text-sky-600'
+            # ラベルとウィジェットのクラスを分けて設定したい場合 (例: ラジオボタンなど)
+            # else:
+            #    field.widget.attrs['class'] = 'some-other-class'
