@@ -15,7 +15,7 @@
     <h1 class="text-center text-3xl font-extrabold text-gray-800 mb-8">ユーザー情報編集</h1>
     <p class="text-center text-xl text-gray-800 mb-8">ユーザー情報の編集を行なってください</p>
     <div class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
-        <form action="{% url 'user_setting' %}" method="post" class="space-y-6">
+        <form action="{% url 'instructor_setting' %}" method="post" class="space-y-6">
             {% csrf_token %}
             <div>
                 {{ user_form.profile_image.label_tag}}
