@@ -45,8 +45,8 @@ def instructor_signup_view(request):
         signup_form = InstructorSignupForm()
     return render(request, 'accounts_app/instructor_signup.html', {'signup_form': signup_form})
 
-# ログイン処理
-def login_view(request):
+# ログイン処理 - 受講者側
+def student_login_view(request):
     # ログインフォームが送られてきた時
     if request.method == 'POST':
         login_form = LoginForm(request.POST)
@@ -65,17 +65,50 @@ def login_view(request):
                 login_form.add_error(None, 'メールアドレスまたはパスワードが違います')
     else:
         login_form = LoginForm()
-    return render(request, 'accounts_app/login.html', {'login_form': login_form})
+    return render(request, 'accounts_app/student_login.html', {'login_form': login_form})
+
+# ログイン処理 - インストラクター側
+def instructor_login_view(request):
+    # ログインフォームが送られてきた時
+    if request.method == 'POST':
+        login_form = LoginForm(request.POST)
+
+        if login_form.is_valid():
+            username = login_form.cleaned_data['username']
+            password = login_form.cleaned_data['password']
+            # 認証処理
+            user = authenticate(request, username=username, password=password)
+
+            if user is not None:
+                login(request, user)
+                return redirect('dashboard')
+            else:
+                print("ログイン失敗")
+                login_form.add_error(None, 'メールアドレスまたはパスワードが違います')
+    else:
+        login_form = LoginForm()
+    return render(request, 'accounts_app/instructor_login.html', {'login_form': login_form})
 
 # ログアウト処理
 @login_required
 def logout_view(request):
-    logout(request)
-    return redirect('login')
+    # ログアウト前にユーザー情報を保存
+    user = request.user
+    is_student = user.is_student
+    is_instructor = user.is_instructor
 
-# ユーザー情報設定 / 更新
+    # ログアウト処理
+    logout(request)
+
+    # ユーザーの条件でリダイレクトさせる
+    if is_student:
+        return redirect('student_login')
+    elif is_instructor:
+        return redirect('instructor_login')
+
+# ユーザー情報設定 / 更新 - 受講者用
 @login_required
-def user_setting(request):
+def student_setting(request):
     # 「更新ボタン」が押された時
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, instance=request.user)
@@ -94,10 +127,10 @@ def user_setting(request):
         if not user_valid and not password_valid:
             messages.error(request, '入力内容に誤りがあります。確認してください')
 
-        # どちらも成功していたら「user_settings」へリダイレクト
+        # どちらも成功していたら「student_settings」へリダイレクト
         if user_valid and password_valid:
             messages.success(request, 'ユーザー情報を更新しました')
-            return redirect('user_setting')
+            return redirect('student_setting')
         
     user_form = UserUpdateForm(instance=request.user)
     password_form = CustomPasswordChangeForm(user=request.user)
@@ -105,4 +138,38 @@ def user_setting(request):
         'user_form': user_form,
         'password_form': password_form,
     }
-    return render(request, 'accounts_app/user_setting.html', params)
+    return render(request, 'accounts_app/student_setting.html', params)
+
+# ユーザー情報設定 / 更新 - インストラクター用
+@login_required
+def instructor_setting(request):
+    # 「更新ボタン」が押された時
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        password_form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+
+        user_valid = user_form.is_valid()
+        password_valid = password_form.is_valid()
+
+        if user_valid:
+            user_form.save()
+        
+        if password_valid:
+            user = password_form.save()
+            #パスワード変更後にログアウトされるのを防ぐ
+            update_session_auth_hash(request, user)
+        if not user_valid and not password_valid:
+            messages.error(request, '入力内容に誤りがあります。確認してください')
+
+        # どちらも成功していたら「instructor_settings」へリダイレクト
+        if user_valid and password_valid:
+            messages.success(request, 'ユーザー情報を更新しました')
+            return redirect('instructor_setting')
+        
+    user_form = UserUpdateForm(instance=request.user)
+    password_form = CustomPasswordChangeForm(user=request.user)
+    params = {
+        'user_form': user_form,
+        'password_form': password_form,
+    }
+    return render(request, 'accounts_app/instructor_setting.html', params)
