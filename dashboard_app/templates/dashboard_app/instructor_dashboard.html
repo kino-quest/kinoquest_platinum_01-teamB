@@ -1,5 +1,37 @@
 {% extends 'dashboard_app/base.html' %}
 {% block title %}ダッシュボード | スノトラ{% endblock %}
 {% block content %}
-<h1>インストラクター用で</h1>
+<div class="flex min-h-screen bg-gray-50 p-6">
+    <!-- 左カラム -->
+    <div class="w-2/3 p-4 bg-white rounded-xl shadow-md">
+        <!-- 出勤日表示 -->
+        <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-800">出勤日：2025年6月3日</h2>
+        </div>
+        <!-- 出勤日カレンダー -->
+        <div>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">出勤カレンダー</h3>
+            <div class="bg-gray-100 rounded-lg p-4 text-center text-gray-500">
+            ここにカレンダーを表示
+            </div>
+        </div>
+    </div>
+    <!-- 右カラム -->
+    <div class="w-1/3 p-4 ml-6 bg-white rounded-xl shadow-md">
+        <!-- 本日の予約者表示 -->
+        <h3 class="text-lg font-medium text-gray-700 mb-4">本日の予約者</h3>
+        <ul class="space-y-4">
+            <li class="p-4 bg-gray-100 rounded-lg">
+            佐藤 花子（10:00〜11:00）
+            </li>
+            <li class="p-4 bg-gray-100 rounded-lg">
+            鈴木 一郎（11:30〜12:30）
+            </li>
+            <li class="p-4 bg-gray-100 rounded-lg">
+            田中 真美（14:00〜15:00）
+            </li>
+        </ul>
+    </div>
+</div>
+
 {% endblock %}
