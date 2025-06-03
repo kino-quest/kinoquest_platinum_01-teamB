@@ -20,7 +20,7 @@ def student_signup_view(request):
             user.save()
             # ログイン処理
             login(request, user)
-            return redirect('dashboard')
+            return redirect('student_dashboard')
     else:
         signup_form = StudentSignupForm()
     return render(request, 'accounts_app/student_signup.html', {'signup_form': signup_form})
@@ -40,7 +40,7 @@ def instructor_signup_view(request):
             user.save()
             # ログイン処理
             login(request, user)
-            return redirect('dashboard')
+            return redirect('instructor_dashboard')
     else:
         signup_form = InstructorSignupForm()
     return render(request, 'accounts_app/instructor_signup.html', {'signup_form': signup_form})
@@ -59,7 +59,7 @@ def student_login_view(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('dashboard')
+                return redirect('student_dashboard')
             else:
                 print("ログイン失敗")
                 login_form.add_error(None, 'メールアドレスまたはパスワードが違います')
@@ -81,7 +81,7 @@ def instructor_login_view(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('dashboard')
+                return redirect('instructor_dashboard')
             else:
                 print("ログイン失敗")
                 login_form.add_error(None, 'メールアドレスまたはパスワードが違います')
@@ -144,7 +144,7 @@ def instructor_setting(request):
     # インストラクター以外のユーザーはアクセス拒否
     if not request.user.is_instructor:
         messages.error(request, "インストラクターとしてログインしてください。")
-        return redirect('dashboard')
+        return redirect('instructor_dashboard')
 
     # ユーザーのInstructorProfileインスタンスを取得、存在しない場合は作成
     try:
