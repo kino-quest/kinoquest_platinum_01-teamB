@@ -25,11 +25,12 @@
                     <label>{{ radio.tag }} {{ radio.choice_label }}</label><br>
                 {% endfor %}
             </div>
+            <!-- 非表示の ski_resort コンテナ -->
             <div id="ski-resort-container" style="display: none;">
-                {{ form.ski_resort.label }}
-                {% for radio in form.ski_resort %}
-                    <label>{{ radio.tag }} {{ radio.choice_label }}</label><br>
-                {% endfor %}
+                <label for="id_ski_resort">スキー場</label><br>
+                <div id="ski-resort-options">
+                <!-- JSでここにラジオボタンを挿入 -->
+                </div>
             </div>
 
             <div>
@@ -86,36 +87,37 @@
                     保存する
                 </button>
             </div>
+        
+            <!-- スクリプト：都道府県選択でスキー場を取得＆表示 -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                    const prefectureRadios = document.querySelectorAll('input[name="prefecture"]');
-                    const skiResortContainer = document.getElementById('ski-resort-container');
+                const prefectureRadios = document.querySelectorAll('input[name="prefecture"]');
+                const skiResortContainer = document.getElementById('ski-resort-container');
+                const skiResortOptions = document.getElementById('ski-resort-options');
             
-                    prefectureRadios.forEach(radio => {
-                        radio.addEventListener('change', function () {
-                            const selectedPrefectureId = this.value;
+                prefectureRadios.forEach(radio => {
+                    radio.addEventListener('change', function () {
+                    const selectedPrefectureId = this.value;
             
-                            fetch(`get-ski-resorts/?prefecture_id=${selectedPrefectureId}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    const newHTML = data.map(resort => `
-                                        <label>
-                                            <input type="radio" name="ski_resort" value="${resort.id}"> ${resort.resort_name}
-                                        </label><br>
-                                    `).join('');
+                    fetch(`get-ski-resorts/?prefecture_id=${selectedPrefectureId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                        const newHTML = data.map(resort => `
+                            <label>
+                            <input type="radio" name="ski_resort" value="${resort.id}"> ${resort.resort_name}
+                            </label><br>
+                        `).join('');
             
-                                    skiResortContainer.innerHTML = `
-                                        <label for="id_ski_resort">スキー場</label><br>` + newHTML;
-            
-                                    skiResortContainer.style.display = 'block';
-                                })
-                                .catch(error => {
-                                    console.error('エラー:', error);
-                                });
+                        skiResortOptions.innerHTML = newHTML;
+                        skiResortContainer.style.display = 'block';
+                        })
+                        .catch(error => {
+                        console.error('エラー:', error);
                         });
                     });
                 });
-            </script>            
+                });
+            </script>
         </form>
     </div>
     <!--bg-white-->
