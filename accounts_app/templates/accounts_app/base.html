@@ -11,9 +11,19 @@
   </head>
   <body class="flex flex-col min-h-screen">
     <header class="header bg-blue-100 text-white p-4 flex items-center justify-between h-20 md:h-24">
-      <div class="header__logo-box flex items-center">
-        <img src="{% static 'images/logo.png' %}" class="header__logo h-32 w-auto mr-3" alt="スノトラのロゴ画像です" />
-      </div>
+      <div class="header__logo-box flex items-center mr-8">
+        {% if request.user.is_authenticated %}
+            {% if request.user.is_instructor %}
+            <a href="{% url 'instructor_dashboard' %}">
+                <img src="{% static 'images/logo.png' %}" class="header__logo h-32 w-auto" alt="スノトラのロゴ画像です" />
+            </a>
+            {% elif request.user.is_student %}
+            <a href="{% url 'student_dashboard' %}">
+                <img src="{% static 'images/logo.png' %}" class="header__logo h-32 w-auto" alt="スノトラのロゴ画像です" />
+            </a>
+            {% endif %}
+        {% endif %}
+    </div>
       {% block header_extra %}{% endblock %}
     </header>
     <main class="bg-gray-100 flex-grow">{% block content %}{% endblock %}</main>
