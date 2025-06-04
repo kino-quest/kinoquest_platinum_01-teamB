@@ -1,0 +1,26 @@
+[
+  {
+    "model": "dashboard_app.skiresort",
+    "pk": 1,
+    "fields": {
+      "resort_name": "ニセコ",
+      "prefecture": 1
+    }
+  },
+  {
+    "model": "dashboard_app.skiresort",
+    "pk": 2,
+    "fields": {
+      "resort_name": "富良野スキー場",
+      "prefecture": 1
+    }
+  },
+  {
+    "model": "dashboard_app.skiresort",
+    "pk": 3,
+    "fields": {
+      "resort_name": "白馬八方尾根",
+      "prefecture": 2
+    }
+  }
+]
