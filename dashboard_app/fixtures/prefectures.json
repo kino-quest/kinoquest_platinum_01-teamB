@@ -1,0 +1,12 @@
+[
+  {
+    "model": "dashboard_app.prefecture",
+    "pk": 1,
+    "fields": { "name": "北海道" }
+  },
+  {
+    "model": "dashboard_app.prefecture",
+    "pk": 2,
+    "fields": { "name": "長野県" }
+  }
+]
