@@ -8,6 +8,7 @@
         <title>{% block title %}スノトラ{% endblock %}</title>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <link rel="icon" href="{% static 'images/favicon.png' %} " type="image/png">
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
     </head>
     <body class="flex flex-col min-h-screen">
         <header class="header bg-blue-100 p-4 flex items-center justify-start h-20 md:h-24">
@@ -54,5 +55,27 @@
                 </ul>
             </div>
         </footer>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const calendarEl = document.getElementById('calendar');
+                const calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'ja', // 日本語表示
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek',
+                    },
+                    eventColor: '#3B82F6',
+                    events: '/dashboard/instructor/events/', // Djangoから動的に渡せる
+                    dayCellContent: function(e) {
+                        return {
+                            html: e.dayNumberText.replace('日', '') // 「日」を削除する
+                        };
+                    },
+                });
+                calendar.render();
+            });
+        </script>
     </body>
 </html>
