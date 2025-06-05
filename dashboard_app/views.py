@@ -1,9 +1,13 @@
+import logging
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from .forms import LessonDetailForm
+from .forms import LessonDetailForm, LessonSearchForm
 from .models import ActivityChoices, LessonDetail, SkiResort
+
+logger = logging.getLogger(__name__)
+
 # ダッシュボード - 受講者
 @login_required
 def student_dashboard_view(request):
@@ -26,7 +30,6 @@ def instructor_schedule(request):
             lesson_detail = form.save(commit=False)
             lesson_detail.instructor = request.user
             lesson_detail.save()
-            print("保存した！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！")
             return redirect('instructor_schedule')  # 登録後リダイレクト
         else:
             print("フォームエラー", form.errors)
@@ -37,6 +40,7 @@ def instructor_schedule(request):
 
 # Ajaxエンドポイント
 def get_ski_resorts(request):
+    print("get!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     prefecture_id = request.GET.get('prefecture_id')
     ski_resorts = SkiResort.objects.filter(prefecture_id=prefecture_id).values('id', 'resort_name')
     return JsonResponse(list(ski_resorts), safe=False)
@@ -77,3 +81,31 @@ def instructor_events(request):
 
 
     return JsonResponse(events, safe=False)
+
+@login_required
+def lesson_search(request):
+    form = LessonSearchForm(request.GET or None)
+    lessons = LessonDetail.objects.none()  # デフォルトは空
+
+    if form.is_valid():
+        # フォームの入力から検索条件を取得
+        lesson_date = form.cleaned_data['lesson_date']
+        ski_resort = form.cleaned_data['ski_resort']
+        level = form.cleaned_data['level']
+        lesson_type = form.cleaned_data['lesson_type']
+        time_slot = form.cleaned_data['time_slot']
+
+        # 厳密一致でフィルター
+        lessons = LessonDetail.objects.filter(
+            lesson_date=lesson_date,
+            ski_resort=ski_resort,
+            level=level,
+            lesson_type=lesson_type,
+            time_slot=time_slot,
+            is_reserved=False,  # 予約済みじゃないやつ
+        )
+
+    return render(request, 'dashboard_app/lesson_search.html', {
+        'form': form,
+        'lessons': lessons
+    })

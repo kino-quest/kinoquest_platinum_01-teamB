@@ -1,0 +1,135 @@
+{% extends "dashboard_app/base.html" %}
+{% block title %}探す | スノトラ{% endblock %}
+
+{% block content %}
+<h1 class="text-center text-3xl font-extrabold text-gray-800 mb-8">レッスンを探す</h1>
+<p class="text-center text-xl text-gray-800 mb-8">レッスンを探してみましょう</p>
+
+<div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-3xl">
+    <div class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
+        <form method="get" action="{% url 'lesson_search' %}" class="space-y-6">
+            <div>
+                {{ form.lesson_date.label_tag }}
+                {{ form.lesson_date }}
+                {% if form.lesson_date.errors %}
+                    <ul class="text-red-500 text-sm mt-1">
+                        {% for error in form.lesson_date.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- 都道府県 -->
+            <div>
+                {{ form.prefecture.label }}
+                {% for radio in form.prefecture %}
+                    <label>{{ radio.tag }} {{ radio.choice_label }}</label><br>
+                {% endfor %}
+            </div> 
+            <!-- スキー場：都道府県が選ばれると出現 -->
+            <div id="ski-resort-container" style="display: none;">
+                <label for="id_ski_resort" class="block font-bold mb-2">スキー場</label>
+                <div id="ski-resort-options">
+                    <!-- JSでここにラジオボタンが挿入 -->
+                </div>
+            </div>
+            <div>
+                {{ form.level.label }}
+                {{ form.level }}
+            </div>
+            <div>
+                {{ form.lesson_type.label }}
+                {{ form.lesson_type }}
+            </div>
+            <div>
+                {{ form.time_slot.label }}
+                {{ form.time_slot }}
+            </div>
+
+            <div class="pt-8 flex space-x-4">
+                <button
+                    type="submit"
+                    class="flex-1 flex justify-center py-3 px-4 border border-transparent rounded-md
+                        shadow-sm text-base font-bold text-white bg-sky-600
+                        hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500
+                        transition duration-300 ease-in-out cursor-pointer">
+                    探す
+                </button>
+            </div>
+            <!-- スクリプト -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const prefectureRadios = document.querySelectorAll('input[name="prefecture"]');
+                    const skiResortContainer = document.getElementById('ski-resort-container');
+                    const skiResortOptions = document.getElementById('ski-resort-options');
+                
+                    prefectureRadios.forEach(radio => {
+                        radio.addEventListener('change', function () {
+                            const prefectureId = this.value;
+                            const url = "{% url 'get_ski_resorts_search' %}?prefecture_id=" + prefectureId;
+                
+                            fetch(url)
+                                .then(response => response.json())
+                                .then(data => {
+                                    let html = '';
+                                    data.forEach(resort => {
+                                        html += `
+                                            <label class="mr-4">
+                                                <input type="radio" name="ski_resort" value="${resort.id}">
+                                                ${resort.resort_name}
+                                            </label>
+                                        `;
+                                    });
+                                    skiResortOptions.innerHTML = html;
+                                    skiResortContainer.style.display = 'block';  // 表示！
+                                })
+                                .catch(error => {
+                                    console.error('スキー場取得エラー:', error);
+                                });
+                        });
+                    });
+                });
+                </script>
+                
+        </form>
+    </div>
+
+    <!-- 検索結果 -->
+    {% if lessons %}
+        <div class="mt-10 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 class="text-xl font-bold mb-4 text-center">検索結果</h2>
+            <ul class="space-y-4">
+                {% for lesson in lessons %}
+                    <li class="p-4 border rounded shadow-sm">
+                        <p><strong>日付:</strong> {{ lesson.lesson_date }}</p>
+                        <p><strong>都道府県:</strong> {{ lesson.prefecture.name }}</p>
+                        <p><strong>スキー場:</strong> {{ lesson.ski_resort.name }}</p>
+                        <p><strong>レベル:</strong> {{ lesson.get_level_display }}</p>
+                        <p><strong>レッスン形態:</strong> {{ lesson.get_lesson_type_display }}</p>
+                        <p><strong>時間帯:</strong> {{ lesson.get_time_slot_display }}</p>
+                        <p><strong>インストラクター:</strong> {{ lesson.instructor.username }}</p>
+
+                        <div class="mt-2 text-sm text-gray-600">
+                            {% if lesson.activity_type.name == "スキー" %}
+                                <p>午前: ¥{{ lesson.ski_morning_price }} / 午後: ¥{{ lesson.ski_afternoon_price }} / 1日: ¥{{ lesson.ski_full_day_price }}</p>
+                            {% else %}
+                                <p>午前: ¥{{ lesson.snowboard_morning_price }} / 午後: ¥{{ lesson.snowboard_afternoon_price }} / 1日: ¥{{ lesson.snowboard_full_day_price }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-3">
+                            <a href="{% url 'lesson_reserve' lesson.id %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                                このレッスンを予約する
+                            </a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% elif request.GET %}
+        <p class="text-center text-gray-600 mt-8">条件に一致するレッスンは見つかりませんでした。</p>
+    {% endif %}
+</div>
+{% endblock %}
+
