@@ -28,7 +28,7 @@
             <nav class="flex items-center space-x-54 text-lg font-medium text-gray-700 mx-auto">
                 {% if user.is_authenticated %}
                     {% if user.is_student %}
-                        <a href="">探す</a>
+                        <a href="{% url 'lesson_search' %}">探す</a>
                         <a href="">履歴</a>
                         <a href="{% url 'student_setting' %}">
                             <img src="{% static 'images/favicon.png' %}" alt="とりあえずアイコン" class="h-10 w-10 rounded-full cursor-pointer hover:opacity-80 transition duration-200">

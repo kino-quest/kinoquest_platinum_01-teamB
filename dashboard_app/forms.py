@@ -93,3 +93,54 @@ class LessonDetailForm(forms.ModelForm):
                 pass
         elif self.instance.pk:
             self.fields['ski_resort'].queryset = SkiResort.objects.filter(prefecture=self.instance.prefecture)
+
+# 検索フォーム
+class LessonSearchForm(forms.Form):
+    lesson_date = forms.DateField(
+        label="レッスン日",
+        widget=forms.DateInput(attrs={'type': 'date', 'class': COMMON_INPUT_CLASS})
+    )
+
+    prefecture = forms.ModelChoiceField(
+        queryset=Prefecture.objects.all(),
+        label="都道府県",
+        widget=forms.RadioSelect(attrs={'class': 'flex space-x-4'}),
+        empty_label=None
+    )
+
+    ski_resort = forms.ModelChoiceField(
+        queryset=SkiResort.objects.none(),  # 選択された都道府県に応じて後で動的変更
+        label="スキー場",
+        widget=forms.RadioSelect(attrs={'class': 'flex space-x-4'})
+    )
+
+    level = forms.ChoiceField(
+        choices=[('', '選んでください')] + list(LessonDetail._meta.get_field('level').choices),
+        label="レベル",
+        widget=forms.Select(attrs={'class': COMMON_INPUT_CLASS})
+    )
+
+    lesson_type = forms.ChoiceField(
+        choices=[('', '選んでください')] + list(LessonDetail._meta.get_field('lesson_type').choices),
+        label="レッスン形態",
+        widget=forms.Select(attrs={'class': COMMON_INPUT_CLASS})
+    )
+
+    time_slot = forms.ChoiceField(
+        choices=[('', '選んでください')] + list(LessonDetail._meta.get_field('time_slot').choices),
+        label="時間帯",
+        widget=forms.Select(attrs={'class': COMMON_INPUT_CLASS})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # 都道府県が選ばれていたら、それに応じたスキー場を動的に絞る
+        if 'prefecture' in self.data:
+            try:
+                prefecture_id = int(self.data.get('prefecture'))
+                self.fields['ski_resort'].queryset = SkiResort.objects.filter(prefecture_id=prefecture_id)
+            except (ValueError, TypeError):
+                self.fields['ski_resort'].queryset = SkiResort.objects.none()
+        else:
+            self.fields['ski_resort'].queryset = SkiResort.objects.none()

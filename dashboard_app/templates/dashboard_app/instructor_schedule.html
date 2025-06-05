@@ -91,31 +91,35 @@
             <!-- スクリプト：都道府県選択でスキー場を取得＆表示 -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                const prefectureRadios = document.querySelectorAll('input[name="prefecture"]');
-                const skiResortContainer = document.getElementById('ski-resort-container');
-                const skiResortOptions = document.getElementById('ski-resort-options');
-            
-                prefectureRadios.forEach(radio => {
-                    radio.addEventListener('change', function () {
-                    const selectedPrefectureId = this.value;
-            
-                    fetch(`get-ski-resorts/?prefecture_id=${selectedPrefectureId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                        const newHTML = data.map(resort => `
-                            <label>
-                            <input type="radio" name="ski_resort" value="${resort.id}"> ${resort.resort_name}
-                            </label><br>
-                        `).join('');
-            
-                        skiResortOptions.innerHTML = newHTML;
-                        skiResortContainer.style.display = 'block';
-                        })
-                        .catch(error => {
-                        console.error('エラー:', error);
+                    const prefectureRadios = document.querySelectorAll('input[name="prefecture"]');
+                    const skiResortContainer = document.getElementById('ski-resort-container');
+                    const skiResortOptions = document.getElementById('ski-resort-options');
+                
+                    prefectureRadios.forEach(radio => {
+                        radio.addEventListener('change', function () {
+                            const prefectureId = this.value;
+                            const url = "{% url 'get_ski_resorts_instructor' %}?prefecture_id=" + prefectureId;
+                
+                            fetch(url)
+                                .then(response => response.json())
+                                .then(data => {
+                                    let html = '';
+                                    data.forEach(resort => {
+                                        html += `
+                                            <label class="mr-4">
+                                                <input type="radio" name="ski_resort" value="${resort.id}">
+                                                ${resort.resort_name}
+                                            </label>
+                                        `;
+                                    });
+                                    skiResortOptions.innerHTML = html;
+                                    skiResortContainer.style.display = 'block';  // 表示！
+                                })
+                                .catch(error => {
+                                    console.error('スキー場取得エラー:', error);
+                                });
                         });
                     });
-                });
                 });
             </script>
         </form>
