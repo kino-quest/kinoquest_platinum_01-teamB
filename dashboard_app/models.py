@@ -42,6 +42,10 @@ class ActivityType(models.Model):
 
     def __str__(self):
         return self.get_activity_name_display()
+    
+    @property
+    def display_name(self):
+        return self.get_activity_name_display()
 
 # --- 出勤情報（インストラクターが作成） ---
 class LessonDetail(models.Model):

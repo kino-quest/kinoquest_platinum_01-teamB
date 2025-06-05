@@ -135,12 +135,18 @@ class LessonSearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # 都道府県が選ばれていたら、それに応じたスキー場を動的に絞る
         if 'prefecture' in self.data:
             try:
                 prefecture_id = int(self.data.get('prefecture'))
                 self.fields['ski_resort'].queryset = SkiResort.objects.filter(prefecture_id=prefecture_id)
             except (ValueError, TypeError):
+                self.fields['ski_resort'].queryset = SkiResort.objects.none()
+        elif 'ski_resort' in self.data:
+            try:
+                ski_resort_id = int(self.data.get('ski_resort'))
+                ski_resort = SkiResort.objects.get(id=ski_resort_id)
+                self.fields['ski_resort'].queryset = SkiResort.objects.filter(prefecture=ski_resort.prefecture)
+            except (ValueError, TypeError, SkiResort.DoesNotExist):
                 self.fields['ski_resort'].queryset = SkiResort.objects.none()
         else:
             self.fields['ski_resort'].queryset = SkiResort.objects.none()

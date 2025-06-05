@@ -1,7 +1,7 @@
 import logging
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from .forms import LessonDetailForm, LessonSearchForm
 from .models import ActivityChoices, LessonDetail, SkiResort
@@ -96,16 +96,25 @@ def lesson_search(request):
         time_slot = form.cleaned_data['time_slot']
 
         # 厳密一致でフィルター
-        lessons = LessonDetail.objects.filter(
+        lessons = LessonDetail.objects.select_related("activity_type").filter(
             lesson_date=lesson_date,
             ski_resort=ski_resort,
             level=level,
             lesson_type=lesson_type,
             time_slot=time_slot,
-            is_reserved=False,  # 予約済みじゃないやつ
+            #is_reserved=False,  # 予約済みじゃないやつ
         )
+        for lesson in lessons:
+            # activity_type_display をテンプレートで使えるよう追加
+            lesson.activity_type_display = lesson.activity_type.get_activity_name_display()
+            print(lesson.ski_morning_price)
 
     return render(request, 'dashboard_app/lesson_search.html', {
         'form': form,
         'lessons': lessons
     })
+
+@login_required
+def lesson_confirm_view(request, lesson_id):
+    lesson = get_object_or_404(LessonDetail, id=lesson_id)
+    return render(request, 'dashboard_app/lesson_confirm.html', {'lesson': lesson})

@@ -1,0 +1,29 @@
+{% extends "dashboard_app/base.html" %}
+
+{% block title %}レッスン確認{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">レッスン内容の確認</h1>
+
+<ul class="mb-4 space-y-2">
+    <li><strong>日付:</strong> {{ lesson.lesson_date }}</li>
+    <li><strong>スキー場:</strong> {{ lesson.ski_resort.resort_name }}</li>
+    <li><strong>インストラクター:</strong> {{ lesson.instructor.username }}</li>
+    <li><strong>時間帯:</strong> {{ lesson.get_time_slot_display }}</li>
+    <li><strong>金額:</strong> 
+        {% if lesson.activity_type.get_activity_name_display == "スキー" %}
+            午前: ¥{{ lesson.ski_morning_price }}
+        {% else %}
+            午前: ¥{{ lesson.snowboard_morning_price }}
+        {% endif %}
+    </li>
+</ul>
+
+{% comment %} <form method="post" action="{% url 'lesson_reserve' lesson.id %}">
+    {% csrf_token %}
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        予約を確定する
+    </button>
+</form> {% endcomment %}
+
+{% endblock %}

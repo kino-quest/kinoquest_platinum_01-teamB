@@ -9,7 +9,8 @@ urlpatterns = [
     path('instructor/schedule/', views.instructor_schedule, name="instructor_schedule"),
     path('search/', views.lesson_search, name='lesson_search'),
     # Ajaxエンドポイント
-    path('instructor/schedule/get-ski-resorts/', views.get_ski_resorts, name="get_ski_resorts_instructor"),
     path('search/get-ski-resorts/', views.get_ski_resorts, name="get_ski_resorts_search"),
+    path('instructor/schedule/get-ski-resorts/', views.get_ski_resorts, name="get_ski_resorts_instructor"),
     path('instructor/events/', views.instructor_events, name='instructor_events'),
+    path('lesson/confirm/<int:lesson_id>/', views.lesson_confirm_view, name='lesson_confirm'),
 ]
