@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from .forms import LessonDetailForm, LessonSearchForm
-from .models import ActivityChoices, LessonDetail, SkiResort
+from .models import ActivityChoices, LessonDetail, LessonPreference, SkiResort
 
 logger = logging.getLogger(__name__)
 
@@ -118,3 +118,59 @@ def lesson_search(request):
 def lesson_confirm_view(request, lesson_id):
     lesson = get_object_or_404(LessonDetail, id=lesson_id)
     return render(request, 'dashboard_app/lesson_confirm.html', {'lesson': lesson})
+
+@login_required
+def lesson_reserve_view(request, lesson_id):
+    lesson = get_object_or_404(LessonDetail, id=lesson_id)
+
+    # ログインユーザーが受講者かどうか確認（念のため）
+    if request.user.role != 'student':
+        return redirect('lesson_search')  # インストラクターは予約できない
+
+    # 既に予約しているかチェック（重複防止）
+    existing = LessonPreference.objects.filter(student=request.user, lesson_detail=lesson)
+    if existing.exists():
+        # すでに予約済み → 履歴へ飛ばす（後でカスタマイズ可）
+        return redirect('lesson_history') # lesson_historyへ
+
+    # 新規予約作成
+    LessonPreference.objects.create(student=request.user, lesson_detail=lesson)
+
+    # 完了ページへリダイレクト（もしくは履歴へ）
+    return redirect('lesson_history') # lesson_historyへ
+
+@login_required
+def lesson_history_view(request):
+    preferences = LessonPreference.objects.filter(student=request.user).select_related('lesson_detail__activity_type', 'lesson_detail__ski_resort').order_by('-created_at')
+
+    def get_lesson_price(lesson):
+        activity = lesson.activity_type.activity_name
+        slot = lesson.time_slot
+        if activity == ActivityChoices.SKI:
+            return {
+                'morning': lesson.ski_morning_price,
+                'afternoon': lesson.ski_afternoon_price,
+                'full_day': lesson.ski_full_day_price,
+            }.get(slot)
+        elif activity == ActivityChoices.SNOWBOARD:
+            return {
+                'morning': lesson.snowboard_morning_price,
+                'afternoon': lesson.snowboard_afternoon_price,
+                'full_day': lesson.snowboard_full_day_price,
+            }.get(slot)
+        return None
+
+    # 金額を含めた情報のリストをテンプレートに渡す
+    history_data = []
+    for pref in preferences:
+        lesson = pref.lesson_detail
+        price = get_lesson_price(lesson)
+        history_data.append({
+            'preference': pref,
+            'lesson': lesson,
+            'price': price,
+        })
+
+    return render(request, 'dashboard_app/lesson_history.html', {
+        'history_data': history_data,
+    })

@@ -13,4 +13,8 @@ urlpatterns = [
     path('instructor/schedule/get-ski-resorts/', views.get_ski_resorts, name="get_ski_resorts_instructor"),
     path('instructor/events/', views.instructor_events, name='instructor_events'),
     path('lesson/confirm/<int:lesson_id>/', views.lesson_confirm_view, name='lesson_confirm'),
+    # 予約確定処理（POST専用）
+    path('lesson/reserve/<int:lesson_id>/', views.lesson_reserve_view, name='lesson_reserve'),
+    # 履歴
+    path('lesson/history/', views.lesson_history_view, name='lesson_history'),
 ]
