@@ -20,4 +20,6 @@ urlpatterns = [
     path('lesson_cancel/<int:preference_id>/', views.lesson_cancel_view, name='lesson_cancel'),
     path('student-events/', views.student_events, name='student_events'),
     path('instructor/history/', views.instructor_history_view, name='instructor_history'),
+    path('cancel_preference/<int:pref_id>/', views.cancel_preference, name='cancel_preference'),
+    path('cancel_lesson/<int:lesson_id>/', views.cancel_lesson, name='cancel_lesson'),
 ]

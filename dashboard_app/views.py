@@ -239,7 +239,33 @@ def instructor_history_view(request):
     if not request.user.is_instructor:
         return render(request, 'error.html', {'message': 'インストラクターのみアクセス可能です。'})
 
-    lessons = LessonDetail.objects.filter(instructor=request.user).order_by('-lesson_date')
+    lessons = LessonDetail.objects.filter(instructor=request.user).order_by('-lesson_date').prefetch_related('lessonpreference_set__student')
+
     return render(request, 'dashboard_app/instructor_history.html', {
-        'lessons': lessons
+        'lessons': lessons,
     })
+
+@login_required
+def cancel_preference(request, pref_id):
+    pref = get_object_or_404(LessonPreference, id=pref_id)
+
+    # インストラクター本人かどうか確認
+    if pref.lesson_detail.instructor != request.user:
+        return render(request, 'error.html', {'message': '権限がありません。'})
+
+    pref.delete()  # キャンセル（削除）
+    return redirect('instructor_history')
+
+@login_required
+def cancel_lesson(request, lesson_id):
+    lesson = get_object_or_404(LessonDetail, id=lesson_id)
+
+    if lesson.instructor != request.user:
+        return render(request, 'error.html', {'message': '権限がありません。'})
+
+    # 予約があればキャンセル不可にしてもいいし、今回は単純に削除
+    if lesson.lessonpreference_set.exists():
+        return render(request, 'error.html', {'message': '受講者がいるためキャンセルできません。'})
+
+    lesson.delete()
+    return redirect('instructor_history')
