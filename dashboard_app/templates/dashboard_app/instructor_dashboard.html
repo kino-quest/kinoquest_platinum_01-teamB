@@ -6,7 +6,7 @@
     <div class="w-2/3 p-4 bg-white rounded-xl shadow-md">
         <!-- 出勤日表示 -->
         <div class="mb-6">
-        <h2 class="text-xl font-semibold text-gray-800">今日 : {{ today|date:"Y 年 n 月 j 日" }}</h2>
+            <h2 class="text-xl font-semibold text-gray-800">今日 : {{ today|date:"Y 年 n 月 j 日" }}</h2>
         </div>
         <!-- 出勤日カレンダー -->
         <div>
@@ -32,5 +32,26 @@
     </div>
 </div>
 <!--/.flex-->
-
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'ja', // 日本語表示
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek',
+            },
+            eventColor: '#3B82F6',
+            events: '/dashboard/instructor/events/', // Djangoから動的に渡せる
+            dayCellContent: function(e) {
+                return {
+                    html: e.dayNumberText.replace('日', '') // 「日」を削除する
+                };
+            },
+        });
+        calendar.render();
+    });
+</script>
 {% endblock %}

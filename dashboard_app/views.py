@@ -12,7 +12,17 @@ logger = logging.getLogger(__name__)
 # ダッシュボード - 受講者
 @login_required
 def student_dashboard_view(request):
-    return render(request, 'dashboard_app/student_dashboard.html')
+    today = timezone.localtime().date()
+    # 受講者の予約履歴を取得（未来の日付のみ表示）
+    preferences = LessonPreference.objects.filter(
+        student=request.user,
+        lesson_detail__lesson_date__gte=timezone.now().date()
+    ).select_related('lesson_detail').order_by('lesson_detail__lesson_date')
+
+    return render(request, 'dashboard_app/student_dashboard.html', {
+        'preferences': preferences,
+        'today': today,
+    })
 
 # ダッシュボード - インストラクター
 @login_required
@@ -83,6 +93,7 @@ def instructor_events(request):
 
     return JsonResponse(events, safe=False)
 
+# 受講者側がインストラクターのレッスン状況を取得する
 @login_required
 def lesson_search(request):
     form = LessonSearchForm(request.GET or None)
@@ -182,3 +193,25 @@ def lesson_cancel_view(request, preference_id):
     preference = get_object_or_404(LessonPreference, id=preference_id, student=request.user)
     preference.delete()
     return redirect('lesson_history')
+
+@login_required
+def student_events(request):
+    print("getカレンダー!!!!!!!!!!!!!!!!!!!!!!!!!")
+    preferences = LessonPreference.objects.filter(student=request.user).select_related('lesson_detail')
+    events = []
+
+    for pref in preferences:
+        lesson = pref.lesson_detail
+        title = f"{lesson.ski_resort.resort_name} ({lesson.get_time_slot_display()})"
+        start_time = {
+            "morning": "09:00:00",
+            "afternoon": "13:00:00",
+            "full_day": "09:00:00"
+        }.get(lesson.time_slot, "09:00:00")  # デフォルトで morning に
+
+        events.append({
+            "title": title,
+            "start": f"{lesson.lesson_date}T{start_time}",
+        })
+
+    return JsonResponse(events, safe=False)
