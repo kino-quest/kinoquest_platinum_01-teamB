@@ -28,7 +28,26 @@ def student_dashboard_view(request):
 @login_required
 def instructor_dashboard_view(request):
     today = timezone.localtime().date()
-    return render(request, 'dashboard_app/instructor_dashboard.html', {'today': today})
+    instructor = request.user
+    # インストラクターが担当し、予約されたレッスン全体（未来・過去含む）
+    reservations = LessonPreference.objects.filter(
+        lesson_detail__instructor=instructor
+    ).select_related('student', 'lesson_detail').order_by('lesson_detail__lesson_date', 'lesson_detail__time_slot')
+
+    reservation_data = []
+    for pref in reservations:
+        student = pref.student
+        detail = pref.lesson_detail
+        reservation_data.append({
+            'student_name': student.username,
+            'lesson_date': detail.lesson_date,
+            'time_slot': detail.get_time_slot_display(),
+        })
+
+    return render(request, 'dashboard_app/instructor_dashboard.html', {
+        'today': today,
+        'reservation_data': reservation_data,
+    })
 
 @login_required
 def instructor_schedule(request):
