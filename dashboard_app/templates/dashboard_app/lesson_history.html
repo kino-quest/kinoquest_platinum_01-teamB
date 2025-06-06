@@ -13,6 +13,11 @@
             <p><strong>インストラクター:</strong> {{ item.lesson.instructor.username }}</p>
             <p><strong>金額:</strong> ¥{{ item.price|default:"-" }}</p>
             <p><strong>登録日:</strong> {{ item.preference.created_at|date:"Y年m月d日 H:i" }}</p>
+            <!-- キャンセルボタン -->
+            <form method="POST" action="{% url 'lesson_cancel' item.preference.id %}" class="mt-2">
+                {% csrf_token %}
+                <button type="submit" class="text-red-600 hover:underline">キャンセル</button>
+            </form>
         </li>
     {% empty %}
         <p>まだレッスンの履歴はありません。</p>

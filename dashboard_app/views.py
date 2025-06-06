@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from .forms import LessonDetailForm, LessonSearchForm
 from .models import ActivityChoices, LessonDetail, LessonPreference, SkiResort
 
@@ -174,3 +175,10 @@ def lesson_history_view(request):
     return render(request, 'dashboard_app/lesson_history.html', {
         'history_data': history_data,
     })
+
+@login_required
+@require_POST
+def lesson_cancel_view(request, preference_id):
+    preference = get_object_or_404(LessonPreference, id=preference_id, student=request.user)
+    preference.delete()
+    return redirect('lesson_history')
