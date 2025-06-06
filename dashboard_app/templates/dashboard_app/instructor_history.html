@@ -1,0 +1,37 @@
+{% extends 'dashboard_app/base.html' %}
+{% block title %}履歴 | スノトラ{% endblock %}
+{% load humanize %}
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">過去のレッスン履歴</h2>
+
+    {% if lessons %}
+        <ul class="space-y-4">
+            {% for lesson in lessons %}
+                <li class="border rounded-lg p-4 bg-gray-50">
+                    <p><strong>日付：</strong>{{ lesson.lesson_date|date:"Y年n月j日" }}</p>
+                    <p><strong>種別：</strong>{{ lesson.activity_type }}</p>
+                    <p><strong>レベル：</strong>{{ lesson.level_display_ja }}</p>
+                    <p><strong>レッスン形態：</strong>{{ lesson.lesson_type_display_ja }}</p>
+                    <p><strong>時間帯：</strong>
+                        {{ lesson.time_slot_display_ja }}
+                    </p>
+                    <p><strong>料金：</strong>
+                        {% if lesson.time_slot == 'morning' %}
+                            ¥{{ lesson.ski_morning_price|intcomma }}
+                        {% elif lesson.time_slot == 'afternoon' %}
+                            ¥{{ lesson.ski_afternoon_price|intcomma }}
+                        {% elif lesson.time_slot == 'full_day' %}
+                            ¥{{ lesson.ski_full_day_price|intcomma }}
+                        {% else %}
+                            不明
+                        {% endif %}
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-gray-600">過去のレッスンはまだありません。</p>
+    {% endif %}
+</div>
+{% endblock %}

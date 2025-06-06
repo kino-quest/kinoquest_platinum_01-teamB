@@ -19,4 +19,5 @@ urlpatterns = [
     path('lesson/history/', views.lesson_history_view, name='lesson_history'),
     path('lesson_cancel/<int:preference_id>/', views.lesson_cancel_view, name='lesson_cancel'),
     path('student-events/', views.student_events, name='student_events'),
+    path('instructor/history/', views.instructor_history_view, name='instructor_history'),
 ]

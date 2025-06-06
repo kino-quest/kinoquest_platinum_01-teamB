@@ -49,24 +49,27 @@ class ActivityType(models.Model):
 
 # --- 出勤情報（インストラクターが作成） ---
 class LessonDetail(models.Model):
+    LEVEL_CHOICES = [
+        ('beginner', '初心者'),
+        ('intermediate', '中級者'),
+        ('advanced', '上級者'),
+    ]
+    LESSON_TYPE_CHOICES = [
+    ('private_lesson', 'プライベートレッスン'),
+    ]
+    TIME_SLOT_CHOICES = [
+        ('morning', '午前'),
+        ('afternoon', '午後'),
+        ('full_day', '1日'),
+    ]
     lesson_date = models.DateField()
     prefecture = models.ForeignKey(Prefecture, on_delete=models.CASCADE)
     ski_resort = models.ForeignKey(SkiResort, on_delete=models.CASCADE)
     activity_type = models.ForeignKey(ActivityType, on_delete=models.CASCADE)
-    level = models.CharField(max_length=20, choices=[
-        ('beginner', '初心者'),
-        ('intermediate', '中級者'),
-        ('advanced', '上級者')
-    ])
-    lesson_type = models.CharField(max_length=20, choices=[
-        ('private_lesson', 'プライベートレッスン'),
-    ])
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    lesson_type = models.CharField(max_length=20, choices=LESSON_TYPE_CHOICES)
     max_students = models.IntegerField(validators=[MinValueValidator(1)])
-    time_slot = models.CharField(max_length=20, choices=[
-        ('morning', '午前'),
-        ('afternoon', '午後'),
-        ('full_day', '1日')
-    ])
+    time_slot = models.CharField(max_length=20, choices=TIME_SLOT_CHOICES)
     ski_morning_price = models.IntegerField(blank=True, null=True)
     ski_afternoon_price = models.IntegerField(blank=True, null=True)
     ski_full_day_price = models.IntegerField(blank=True, null=True)
@@ -75,6 +78,17 @@ class LessonDetail(models.Model):
     snowboard_full_day_price = models.IntegerField(blank=True, null=True)
     instructor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'role': 'instructor'})
 
+    @property
+    def level_display_ja(self):
+        return dict(self.LEVEL_CHOICES).get(self.level, '未設定')
+    @property
+    def lesson_type_display_ja(self):
+        return dict(self.LESSON_TYPE_CHOICES).get(self.lesson_type, '未設定')
+
+    @property
+    def time_slot_display_ja(self):
+        return dict(self.TIME_SLOT_CHOICES).get(self.time_slot, '未設定')
+    
     def __str__(self):
         return f"{self.lesson_date} - {self.instructor.username}"
 

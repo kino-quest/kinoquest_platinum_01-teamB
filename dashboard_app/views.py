@@ -162,13 +162,13 @@ def lesson_reserve_view(request, lesson_id):
     existing = LessonPreference.objects.filter(student=request.user, lesson_detail=lesson)
     if existing.exists():
         # すでに予約済み → 履歴へ飛ばす（後でカスタマイズ可）
-        return redirect('lesson_history') # lesson_historyへ
+        return redirect('lesson_history')
 
     # 新規予約作成
     LessonPreference.objects.create(student=request.user, lesson_detail=lesson)
 
     # 完了ページへリダイレクト（もしくは履歴へ）
-    return redirect('lesson_history') # lesson_historyへ
+    return redirect('lesson_history') 
 
 @login_required
 def lesson_history_view(request):
@@ -215,7 +215,6 @@ def lesson_cancel_view(request, preference_id):
 
 @login_required
 def student_events(request):
-    print("getカレンダー!!!!!!!!!!!!!!!!!!!!!!!!!")
     preferences = LessonPreference.objects.filter(student=request.user).select_related('lesson_detail')
     events = []
 
@@ -234,3 +233,13 @@ def student_events(request):
         })
 
     return JsonResponse(events, safe=False)
+
+@login_required
+def instructor_history_view(request):
+    if not request.user.is_instructor:
+        return render(request, 'error.html', {'message': 'インストラクターのみアクセス可能です。'})
+
+    lessons = LessonDetail.objects.filter(instructor=request.user).order_by('-lesson_date')
+    return render(request, 'dashboard_app/instructor_history.html', {
+        'lessons': lessons
+    })
