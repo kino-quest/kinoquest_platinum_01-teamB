@@ -17,4 +17,5 @@ urlpatterns = [
     path('lesson/reserve/<int:lesson_id>/', views.lesson_reserve_view, name='lesson_reserve'),
     # 履歴
     path('lesson/history/', views.lesson_history_view, name='lesson_history'),
+    path('lesson_cancel/<int:preference_id>/', views.lesson_cancel_view, name='lesson_cancel'),
 ]
