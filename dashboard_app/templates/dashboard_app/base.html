@@ -55,27 +55,5 @@
                 </ul>
             </div>
         </footer>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const calendarEl = document.getElementById('calendar');
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    locale: 'ja', // 日本語表示
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek',
-                    },
-                    eventColor: '#3B82F6',
-                    events: '/dashboard/instructor/events/', // Djangoから動的に渡せる
-                    dayCellContent: function(e) {
-                        return {
-                            html: e.dayNumberText.replace('日', '') // 「日」を削除する
-                        };
-                    },
-                });
-                calendar.render();
-            });
-        </script>
     </body>
 </html>
