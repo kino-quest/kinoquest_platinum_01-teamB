@@ -194,7 +194,10 @@ def lesson_reserve_view(request, lesson_id):
 
 @login_required
 def lesson_history_view(request):
-    preferences = LessonPreference.objects.filter(student=request.user).select_related('lesson_detail__activity_type', 'lesson_detail__ski_resort').order_by('-created_at')
+    preferences = LessonPreference.objects.filter(
+        student=request.user).select_related(
+            'lesson_detail__activity_type',
+            'lesson_detail__ski_resort').order_by('-created_at')
 
     # 金額を含めた情報のリストをテンプレートに渡す
     history_data = []
@@ -222,7 +225,8 @@ def lesson_cancel_view(request, preference_id):
 
 @login_required
 def student_events(request):
-    preferences = LessonPreference.objects.filter(student=request.user).select_related('lesson_detail')
+    preferences = LessonPreference.objects.filter(
+        student=request.user).select_related('lesson_detail')
     events = []
 
     for pref in preferences:
@@ -246,7 +250,9 @@ def instructor_history_view(request):
     if not request.user.is_instructor:
         return error_response(request, 'インストラクターのみアクセス可能です。')
 
-    lessons = LessonDetail.objects.filter(instructor=request.user).order_by('-lesson_date').prefetch_related('lessonpreference_set__student')
+    lessons = LessonDetail.objects.filter(
+        instructor=request.user).order_by(
+            '-lesson_date').prefetch_related('lessonpreference_set__student')
 
     return render(
         request,

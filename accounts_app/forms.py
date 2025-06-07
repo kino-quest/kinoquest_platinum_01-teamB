@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.widgets import DateInput
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from .models import InstructorProfile
@@ -19,7 +20,31 @@ COMMON_INPUT_CLASS = '''
     focus:ring-indigo-500
     focus:border-indigo-500
     sm:text-sm
-'''
+'''.strip()
+
+# 共通のチェックボックスのクラス
+CHECKBOX_CLASS = 'form-checkbox h-5 w-5 text-sky-600'
+
+# 共通属性の関数化
+def apply_common_attrs(form, field_settings):
+    for field_name, placeholder in field_settings.items():
+        if field_name in form.fields:
+            field = form.fields[field_name]
+            field.widget.attrs['class'] = COMMON_INPUT_CLASS
+            field.widget.attrs['placeholder'] = placeholder
+
+# 性別に関する関数化
+def setup_gender_field(form, field_name='gender'):
+    form.fields[field_name].label = '性別'
+    # ラジオボタンのクラスを個別に設定する
+    form.fields[field_name].widget.attrs['class'] = 'flex items-center space-x-4'
+    # 「----」のデフォルト表示を非表示にする(model側にはあるが上書きする)
+    form.fields[field_name].choices = [('M', '男性'), ('F', '女性')]
+
+# 生年月日に関する関数化
+def setup_date_field(form, field_name='date_of_birth'):
+    form.fields[field_name].widget = DateInput(attrs={'type': 'date', 'class': COMMON_INPUT_CLASS})
+    form.fields[field_name].label = '生年月日'
 
 # 新規登録処理 受講者側
 class StudentSignupForm(UserCreationForm):
@@ -52,7 +77,6 @@ class StudentSignupForm(UserCreationForm):
             'address': '住所',
             'phone_number': '例 : 090-1234-5678',
             'email': '例 : your_email@example.com',
-            'password': 'パスワードを入力してください',
         }
 
         # UserCreationForm が生成する password1 と password2 のフィールドにも適用する
@@ -62,35 +86,21 @@ class StudentSignupForm(UserCreationForm):
         }
         
         # 各フィールドに共通のCSSクラスとプレースホルダーを設定する
-        for field_name, placeholder in field_settings.items():
-            # password フィールドは UserCreationForm が生成するためチェックする
-            if field_name in self.fields:
-                field = self.fields[field_name]
-                field.widget.attrs['class'] = COMMON_INPUT_CLASS
-                field.widget.attrs['placeholder'] = placeholder
+        apply_common_attrs(self, field_settings)
 
         # password1 と password2 にも適用する
-        for field_name, placeholder in password_fields.items():
-            if field_name in self.fields:
-                field = self.fields[field_name]
-                field.widget.attrs['class'] = COMMON_INPUT_CLASS
-                field.widget.attrs['placeholder'] = placeholder
+        apply_common_attrs(self, password_fields)
         
         self.fields['username'].label = '名前'
-        self.fields['gender'].label = '性別'
-        # ラジオボタンのクラスを個別に設定する
-        self.fields['gender'].widget.attrs['class'] = 'flex items-center space-x-4'
-
-        # 「----」のデフォルト表示を非表示にする
-        self.fields['gender'].choices = [('M', '男性'), ('F', '女性')]
-
-        self.fields['date_of_birth'].label = '生年月日'
         self.fields['postal_code'].label = '郵便番号'
         self.fields['address'].label = '住所'
         self.fields['phone_number'].label = '電話番号'
         self.fields['email'].label = 'メール'
         self.fields['password1'].label = 'パスワード'
         self.fields['password2'].label = 'パスワード(確認用)'
+
+        setup_gender_field(self)
+        setup_date_field(self)
 
 # 新規登録処理 インストラクター側
 class InstructorSignupForm(UserCreationForm):
@@ -129,33 +139,19 @@ class InstructorSignupForm(UserCreationForm):
         }
         
         # 各フィールドに共通のCSSクラスとプレースホルダーを設定する
-        for field_name, placeholder in field_settings.items():
-            # password フィールドは UserCreationForm が生成するためチェックする
-            if field_name in self.fields:
-                field = self.fields[field_name]
-                field.widget.attrs['class'] = COMMON_INPUT_CLASS
-                field.widget.attrs['placeholder'] = placeholder
+        apply_common_attrs(self, field_settings)
 
         # password1 と password2 にも適用する
-        for field_name, placeholder in password_fields.items():
-            if field_name in self.fields:
-                field = self.fields[field_name]
-                field.widget.attrs['class'] = COMMON_INPUT_CLASS
-                field.widget.attrs['placeholder'] = placeholder
+        apply_common_attrs(self, password_fields)
         
         self.fields['username'].label = '名前'
-        self.fields['gender'].label = '性別'
-        # ラジオボタンのクラスを個別に設定する
-        self.fields['gender'].widget.attrs['class'] = 'flex items-center space-x-4'
-
-        # 「----」のデフォルト表示を非表示にする
-        self.fields['gender'].choices = [('M', '男性'), ('F', '女性')]
-
-        self.fields['date_of_birth'].label = '生年月日'
         self.fields['phone_number'].label = '電話番号'
         self.fields['email'].label = 'メール'
         self.fields['password1'].label = 'パスワード'
         self.fields['password2'].label = 'パスワード(確認用)'
+
+        setup_gender_field(self)
+        setup_date_field(self)
 
 # ログイン処理
 class LoginForm(forms.Form):
@@ -228,26 +224,20 @@ class UserUpdateForm(forms.ModelForm):
             'address': '住所',
             'phone_number': '例 : 090-1234-5678',
             'email': '例 : your_email@example.com',
-            'password': 'パスワードを入力してください',
         }
 
-        for field_name, placeholder in field_settings.items():
-            # password フィールドは UserCreationForm が生成するためチェックする
-            if field_name in self.fields:
-                field = self.fields[field_name]
-                field.widget.attrs['class'] = COMMON_INPUT_CLASS
-                field.widget.attrs['placeholder'] = placeholder
+        # password フィールドは UserCreationForm が生成するためチェックする
+        apply_common_attrs(self, field_settings)
         
         self.fields['profile_image'].label = '画像'
         self.fields['username'].label = '名前'
-        self.fields['gender'].label = '性別'
-        self.fields['gender'].widget.attrs['class'] = 'flex items-center space-x-4'
-        self.fields['gender'].choices = [('M', '男性'), ('F', '女性')]
-        self.fields['date_of_birth'].label = '生年月日'
         self.fields['postal_code'].label = '郵便番号'
         self.fields['address'].label = '住所'
         self.fields['phone_number'].label = '電話番号'
         self.fields['email'].label = 'メール'
+
+        setup_gender_field(self)
+        setup_date_field(self)
 
 # 編集 PasswordChangeFormをカスタマイズ(オーバーライド)
 class CustomPasswordChangeForm(PasswordChangeForm):
@@ -261,10 +251,7 @@ class CustomPasswordChangeForm(PasswordChangeForm):
             'new_password2': '確認用の新しいパスワードを入力してください',
         }
 
-        for field_name, placeholder in field_settings.items():
-            field = self.fields[field_name]
-            field.widget.attrs['class'] = COMMON_INPUT_CLASS
-            field.widget.attrs['placeholder'] = placeholder
+        apply_common_attrs(self, field_settings)
 
         self.fields['old_password'].label = '現在のパスワード'
         self.fields['new_password2'].label = '新しいパスワード確認'
@@ -305,7 +292,4 @@ class InstructorProfileForm(forms.ModelForm):
                 field.widget.attrs['class'] = COMMON_INPUT_CLASS
             # チェックボックスには別のクラスを適用
             elif isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs['class'] = 'form-checkbox h-5 w-5 text-sky-600'
-            # ラベルとウィジェットのクラスを分けて設定したい場合 (例: ラジオボタンなど)
-            # else:
-            #    field.widget.attrs['class'] = 'some-other-class'
+                field.widget.attrs['class'] = CHECKBOX_CLASS
