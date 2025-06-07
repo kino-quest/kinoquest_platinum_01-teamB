@@ -8,7 +8,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <title>{% block title %}スノトラ{% endblock %}</title>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
-        <link rel="icon" href="{% static 'images/favicon.png' %} " type="image/png">
+        <link rel="icon" href="{% static 'images/favicon.png' %}" type="image/png">
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
@@ -27,33 +27,39 @@
                     {% endif %}
                 {% endif %}
             </div>
-            <nav class="flex items-center space-x-54 text-lg font-medium text-gray-700 mx-auto">
-                {% if user.is_authenticated %}
-                    {% if user.is_student %}
-                        <a href="{% url 'lesson_search' %}">探す</a>
-                        <a href="{% url 'lesson_history' %}">履歴</a>
-                        <a href="{% url 'student_setting' %}">
-                            <img src="{% static 'images/favicon.png' %}" alt="とりあえずアイコン" class="h-10 w-10 rounded-full cursor-pointer hover:opacity-80 transition duration-200">
-                        </a>
-                    {% elif user.is_instructor %}
-                        <a href="{% url 'instructor_schedule' %}">日程調整</a>
-                        <a href="{% url 'instructor_history' %}">履歴</a>
-                        <a href="{% url 'instructor_setting' %}" class="hover:text-gray-500 transition duration-200">
-                            <img src="{% static 'images/favicon.png' %}" alt="とりあえずアイコン" class="h-10 w-10 rounded-full cursor-pointer hover:opacity-80 transition duration-200">
-                        </a>
+            <nav class="w-full">
+                <ul class="flex items-center justify-center space-x-24 text-lg font-medium text-gray-700">
+                    {% if user.is_authenticated %}
+                        {% if user.is_student %}
+                            <li><a href="{% url 'lesson_search' %}">探す</a></li>
+                            <li><a href="{% url 'lesson_history' %}">履歴</a></li>
+                            <li>
+                                <a href="{% url 'student_setting' %}">
+                                    <img src="{% static 'images/favicon.png' %}" alt="ユーザーアイコン" class="h-10 w-10 rounded-full cursor-pointer hover:opacity-80 transition duration-200">
+                                </a>
+                            </li>
+                        {% elif user.is_instructor %}
+                            <li><a href="{% url 'instructor_schedule' %}">日程調整</a></li>
+                            <li><a href="{% url 'instructor_history' %}">履歴</a></li>
+                            <li>
+                                <a href="{% url 'instructor_setting' %}" class="hover:text-gray-500 transition duration-200">
+                                    <img src="{% static 'images/favicon.png' %}" alt="ユーザーアイコン" class="h-10 w-10 rounded-full cursor-pointer hover:opacity-80 transition duration-200">
+                                </a>
+                            </li>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
+                </ul>
             </nav>
         </header>
         <main class="bg-gray-100 flex-grow">{% block content %}{% endblock %}</main>
         <footer class="footer bg-blue-100 text-gray-700 p-8">
             <div class="footer__text-box max-w-7xl mx-auto text-center">
                 <ul class="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-8 text-sm">
-                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">運営会社</li>
-                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">利用規約</li>
-                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">プライバシーポリシー</li>
-                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">キャンセルポリシー</li>
-                <li class="hover:text-gray-500 transition duration-300 cursor-pointer">お問いわせ</li>
+                    <li class="hover:text-gray-500 transition duration-300 cursor-pointer">運営会社</li>
+                    <li class="hover:text-gray-500 transition duration-300 cursor-pointer">利用規約</li>
+                    <li class="hover:text-gray-500 transition duration-300 cursor-pointer">プライバシーポリシー</li>
+                    <li class="hover:text-gray-500 transition duration-300 cursor-pointer">キャンセルポリシー</li>
+                    <li class="hover:text-gray-500 transition duration-300 cursor-pointer">お問いわせ</li>
                 </ul>
             </div>
         </footer>

@@ -22,7 +22,7 @@
             <ul class="space-y-4">
                 {% for r in reservation_data %}
                     <li class="p-4 bg-gray-100 rounded-lg">
-                        {{ r.lesson_date|date:"Y年n月j日" }}（{{ r.time_slot }}）<br>
+                        {{ r.lesson_date|date:"Y年n月j日" }} ({{ r.time_slot }})<br>
                         受講者：{{ r.student_name }}
                     </li>
                 {% endfor %}

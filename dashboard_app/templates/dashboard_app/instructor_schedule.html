@@ -4,7 +4,8 @@
 
 <h1 class="text-center text-3xl font-extrabold text-gray-800 mb-8">レッスン詳細編集</h1>
 <p class="text-center text-xl text-gray-800 mb-8">レッスン情報を入力してください</p>
-<div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-md">
+
+<div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-3xl">
     <div class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
         <form method="post" action="{% url 'instructor_schedule' %}" class="space-y-6">
             {% csrf_token %}
@@ -19,16 +20,23 @@
                     </ul>
                 {% endif %}
             </div>
+
+            <!-- 都道府県 -->
             <div>
                 {{ form.prefecture.label }}
-                {% for radio in form.prefecture %}
-                    <label>{{ radio.tag }} {{ radio.choice_label }}</label><br>
-                {% endfor %}
+                <div class="flex flex-wrap gap-4 mt-2">
+                    {% for radio in form.prefecture %}
+                        <label class="flex items-center space-x-1">
+                            {{ radio.tag }}
+                            <span>{{ radio.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
             </div>
             <!-- 非表示の ski_resort コンテナ -->
             <div id="ski-resort-container" style="display: none;">
-                <label for="id_ski_resort">スキー場</label><br>
-                <div id="ski-resort-options">
+                <label for="id_ski_resort" class="block mb-2">スキー場</label>
+                <div id="ski-resort-options" class="flex flex-wrap gap-4">
                 <!-- JSでここにラジオボタンを挿入 -->
                 </div>
             </div>
@@ -106,9 +114,9 @@
                                     let html = '';
                                     data.forEach(resort => {
                                         html += `
-                                            <label class="mr-4">
+                                            <label class="flex items-center space-x-1">
                                                 <input type="radio" name="ski_resort" value="${resort.id}">
-                                                ${resort.resort_name}
+                                                <span>${resort.resort_name}</span>
                                             </label>
                                         `;
                                     });
