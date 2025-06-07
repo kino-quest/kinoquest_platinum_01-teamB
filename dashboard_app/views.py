@@ -19,10 +19,14 @@ def student_dashboard_view(request):
         lesson_detail__lesson_date__gte=timezone.now().date()
     ).select_related('lesson_detail').order_by('lesson_detail__lesson_date')
 
-    return render(request, 'dashboard_app/student_dashboard.html', {
-        'preferences': preferences,
-        'today': today,
-    })
+    return render(
+        request,
+        'dashboard_app/student_dashboard.html',
+        {
+            'preferences': preferences,
+            'today': today,
+        }
+    )
 
 # ダッシュボード - インストラクター
 @login_required
@@ -32,7 +36,13 @@ def instructor_dashboard_view(request):
     # インストラクターが担当し、予約されたレッスン全体（未来・過去含む）
     reservations = LessonPreference.objects.filter(
         lesson_detail__instructor=instructor
-    ).select_related('student', 'lesson_detail').order_by('lesson_detail__lesson_date', 'lesson_detail__time_slot')
+    ).select_related(
+        'student',
+        'lesson_detail'
+    ).order_by(
+        'lesson_detail__lesson_date',
+        'lesson_detail__time_slot'
+    )
 
     reservation_data = []
     for pref in reservations:
@@ -44,15 +54,19 @@ def instructor_dashboard_view(request):
             'time_slot': detail.get_time_slot_display(),
         })
 
-    return render(request, 'dashboard_app/instructor_dashboard.html', {
-        'today': today,
-        'reservation_data': reservation_data,
-    })
+    return render(
+        request,
+        'dashboard_app/instructor_dashboard.html',
+        {
+            'today': today,
+            'reservation_data': reservation_data,
+        }
+    )
 
 @login_required
 def instructor_schedule(request):
     if not request.user.is_instructor:
-        return render(request, 'error.html', {'message': 'インストラクターのみアクセス可能です。'})
+        return error_response(request, 'インストラクターのみアクセス可能です。')
 
     if request.method == 'POST':
         form = LessonDetailForm(request.POST)
@@ -61,19 +75,40 @@ def instructor_schedule(request):
             lesson_detail.instructor = request.user
             lesson_detail.save()
             return redirect('instructor_schedule')  # 登録後リダイレクト
-        else:
-            print("フォームエラー", form.errors)
     else:
         form = LessonDetailForm()
 
     return render(request, 'dashboard_app/instructor_schedule.html', {'form': form})
 
-# Ajaxエンドポイント
+# フロントの都道府県選択に応じて対応するスキー場を返すAjaxエンドポイント
+@login_required
 def get_ski_resorts(request):
-    print("get!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     prefecture_id = request.GET.get('prefecture_id')
     ski_resorts = SkiResort.objects.filter(prefecture_id=prefecture_id).values('id', 'resort_name')
     return JsonResponse(list(ski_resorts), safe=False)
+
+# 価格取得ロジック共通化
+def get_lesson_price(lesson):
+    activity = lesson.activity_type.activity_name
+    slot = lesson.time_slot
+    if activity == ActivityChoices.SKI:
+        return {
+            'morning': lesson.ski_morning_price,
+            'afternoon': lesson.ski_afternoon_price,
+            'full_day': lesson.ski_full_day_price,
+        }.get(slot)
+    elif activity == ActivityChoices.SNOWBOARD:
+        return {
+            'morning': lesson.snowboard_morning_price,
+            'afternoon': lesson.snowboard_afternoon_price,
+            'full_day': lesson.snowboard_full_day_price,
+        }.get(slot)
+    return 0
+
+# エラーページ表示の共通化
+def error_response(request, message, status=403):
+    logger.warning(f"[ERROR_RESPONSE] user={request.user} message={message}")
+    return render(request, 'error.html', {'message': message}, status=status)
 
 # レッスンデータをJSONで返すビュー
 @login_required
@@ -82,33 +117,13 @@ def instructor_events(request):
     events = []
 
     for lesson in lessons:
-        print(f"DEBUG lesson time_slot: {lesson.time_slot}, activity_name: {lesson.activity_type.activity_name}")
-        # アクティビティタイプと時間帯から価格を取得
-        if lesson.activity_type.activity_name == ActivityChoices.SKI:
-            if lesson.time_slot == "morning":
-                price = lesson.ski_morning_price
-            elif lesson.time_slot == "afternoon":
-                price = lesson.ski_afternoon_price
-            elif lesson.time_slot == "full_day":
-                price = lesson.ski_full_day_price
-        elif lesson.activity_type.activity_name == ActivityChoices.SNOWBOARD:
-            if lesson.time_slot == "morning":
-                price = lesson.snowboard_morning_price
-            elif lesson.time_slot == "afternoon":
-                price = lesson.snowboard_afternoon_price
-            elif lesson.time_slot == "full_day":
-                price = lesson.snowboard_full_day_price
-        else:
-            price = 0  # 万が一未設定なら
-        # Noneを0に置き換え
-        price = price or 0
+        price = get_lesson_price(lesson)
 
         # カレンダーに表示させるデータを整形
         events.append({
             "title": f"¥{price}",
             "start": f"{lesson.lesson_date}T09:00:00",  # 固定 or time_slot で調整してもOK
         })
-
 
     return JsonResponse(events, safe=False)
 
@@ -133,22 +148,29 @@ def lesson_search(request):
             level=level,
             lesson_type=lesson_type,
             time_slot=time_slot,
-            #is_reserved=False,  # 予約済みじゃないやつ
         )
         for lesson in lessons:
-            # activity_type_display をテンプレートで使えるよう追加
-            lesson.activity_type_display = lesson.activity_type.get_activity_name_display()
-            print(lesson.ski_morning_price)
+            lesson.price = get_lesson_price(lesson)
 
-    return render(request, 'dashboard_app/lesson_search.html', {
-        'form': form,
-        'lessons': lessons
-    })
+    return render(
+        request,
+        'dashboard_app/lesson_search.html',
+        {
+            'form': form,
+            'lessons': lessons
+        }
+    )
 
 @login_required
 def lesson_confirm_view(request, lesson_id):
     lesson = get_object_or_404(LessonDetail, id=lesson_id)
-    return render(request, 'dashboard_app/lesson_confirm.html', {'lesson': lesson})
+    lesson.price = get_lesson_price(lesson)
+
+    return render(
+        request,
+        'dashboard_app/lesson_confirm.html',
+        {'lesson': lesson,}
+    )
 
 @login_required
 def lesson_reserve_view(request, lesson_id):
@@ -174,23 +196,6 @@ def lesson_reserve_view(request, lesson_id):
 def lesson_history_view(request):
     preferences = LessonPreference.objects.filter(student=request.user).select_related('lesson_detail__activity_type', 'lesson_detail__ski_resort').order_by('-created_at')
 
-    def get_lesson_price(lesson):
-        activity = lesson.activity_type.activity_name
-        slot = lesson.time_slot
-        if activity == ActivityChoices.SKI:
-            return {
-                'morning': lesson.ski_morning_price,
-                'afternoon': lesson.ski_afternoon_price,
-                'full_day': lesson.ski_full_day_price,
-            }.get(slot)
-        elif activity == ActivityChoices.SNOWBOARD:
-            return {
-                'morning': lesson.snowboard_morning_price,
-                'afternoon': lesson.snowboard_afternoon_price,
-                'full_day': lesson.snowboard_full_day_price,
-            }.get(slot)
-        return None
-
     # 金額を含めた情報のリストをテンプレートに渡す
     history_data = []
     for pref in preferences:
@@ -202,9 +207,11 @@ def lesson_history_view(request):
             'price': price,
         })
 
-    return render(request, 'dashboard_app/lesson_history.html', {
-        'history_data': history_data,
-    })
+    return render(
+        request,
+        'dashboard_app/lesson_history.html',
+        {'history_data': history_data,}
+    )
 
 @login_required
 @require_POST
@@ -237,23 +244,26 @@ def student_events(request):
 @login_required
 def instructor_history_view(request):
     if not request.user.is_instructor:
-        return render(request, 'error.html', {'message': 'インストラクターのみアクセス可能です。'})
+        return error_response(request, 'インストラクターのみアクセス可能です。')
 
     lessons = LessonDetail.objects.filter(instructor=request.user).order_by('-lesson_date').prefetch_related('lessonpreference_set__student')
 
-    return render(request, 'dashboard_app/instructor_history.html', {
-        'lessons': lessons,
-    })
+    return render(
+        request,
+        'dashboard_app/instructor_history.html',
+        {'lessons': lessons,}
+    )
 
+@require_POST
 @login_required
 def cancel_preference(request, pref_id):
     pref = get_object_or_404(LessonPreference, id=pref_id)
 
     # インストラクター本人かどうか確認
     if pref.lesson_detail.instructor != request.user:
-        return render(request, 'error.html', {'message': '権限がありません。'})
-
-    pref.delete()  # キャンセル（削除）
+        return error_response(request, '権限がありません。', status=403)
+    # キャンセル（削除）
+    pref.delete()
     return redirect('instructor_history')
 
 @login_required
@@ -261,11 +271,10 @@ def cancel_lesson(request, lesson_id):
     lesson = get_object_or_404(LessonDetail, id=lesson_id)
 
     if lesson.instructor != request.user:
-        return render(request, 'error.html', {'message': '権限がありません。'})
-
+        return error_response(request, '権限がありません。', status=403)
     # 予約があればキャンセル不可にしてもいいし、今回は単純に削除
     if lesson.lessonpreference_set.exists():
-        return render(request, 'error.html', {'message': '受講者がいるためキャンセルできません。'})
+        return error_response(request, '受講者がいるためキャンセルできません。')
 
     lesson.delete()
     return redirect('instructor_history')

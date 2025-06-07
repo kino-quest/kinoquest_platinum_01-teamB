@@ -6,10 +6,6 @@ from accounts_app.models import CustomUser
 class Prefecture(models.Model):
     name = models.CharField(max_length=100)
 
-    PREFECTURE_CHOICES = [
-        "北海道", "岩手県", "宮城県", "山形県", "福島県", "長野県", "新潟県", "福井県",
-    ]
-
     def __str__(self):
         return self.name
 
@@ -17,18 +13,6 @@ class Prefecture(models.Model):
 class SkiResort(models.Model):
     resort_name = models.CharField(max_length=100)
     prefecture = models.ForeignKey(Prefecture, on_delete=models.CASCADE)
-
-    # 都道府県ごとのスキー場定義（必要な分だけ）
-    SKI_RESORT_MAP = {
-        "北海道": ["札幌国際スキー場", "星野リゾートトマムスキー場", "富良野スキー場"],
-        "岩手県": ["夏油高原スキー場", "安比高原スキー場"],
-        "宮城県": ["オニコウベスキー場", "みやぎ蔵王えぼしリゾート", "みやぎ蔵王白石スキー場"],
-        "山形県": ["蔵王温泉スキー場", "月山スキー場", "湯殿山スキー場"],
-        "福島県": ["星野リゾートネコママウンテン", "グランデコスノーリゾート", "猪苗代スキー場"],
-        "長野県": ["白馬八方尾根スキー場", "野沢温泉スキー場"],
-        "新潟県": ["苗場スキー場", "GALA湯沢スキー場"],
-        "福井県": ["スキージャム勝山", "福井和泉スキー場"],
-    }
 
     def __str__(self):
         return self.resort_name

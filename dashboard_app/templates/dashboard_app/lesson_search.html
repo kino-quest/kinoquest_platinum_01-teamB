@@ -1,13 +1,15 @@
 {% extends "dashboard_app/base.html" %}
 {% block title %}探す | スノトラ{% endblock %}
-
+{% load humanize %}
 {% block content %}
-<h1 class="text-center text-3xl font-extrabold text-gray-800 mb-8">レッスンを探す</h1>
+
+<h1 class="text-center text-3xl font-extrabold text-gray-800 mt-2 mb-8">レッスンを探す</h1>
 <p class="text-center text-xl text-gray-800 mb-8">レッスンを探してみましょう</p>
 
 <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-3xl">
     <div class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
         <form method="get" action="{% url 'lesson_search' %}" class="space-y-6">
+            {% csrf_token %}
             <div>
                 {{ form.lesson_date.label_tag }}
                 {{ form.lesson_date }}
@@ -23,14 +25,19 @@
             <!-- 都道府県 -->
             <div>
                 {{ form.prefecture.label }}
-                {% for radio in form.prefecture %}
-                    <label>{{ radio.tag }} {{ radio.choice_label }}</label><br>
-                {% endfor %}
+                <div class="flex flex-wrap gap-4 mt-2">
+                    {% for radio in form.prefecture %}
+                        <label class="flex items-center space-x-1">
+                            {{ radio.tag }}
+                            <span>{{ radio.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
             </div> 
-            <!-- スキー場：都道府県が選ばれると出現 -->
+            <!-- 非表示の ski_resort コンテナ -->
             <div id="ski-resort-container" style="display: none;">
-                <label for="id_ski_resort" class="block font-bold mb-2">スキー場</label>
-                <div id="ski-resort-options">
+                <label for="id_ski_resort" class="block mb-2">スキー場</label>
+                <div id="ski-resort-options" class="flex flex-wrap gap-4">
                     <!-- JSでここにラジオボタンが挿入 -->
                 </div>
             </div>
@@ -50,7 +57,7 @@
             <div class="pt-8 flex space-x-4">
                 <button
                     type="submit"
-                    class="flex-1 flex justify-center py-3 px-4 border border-transparent rounded-md
+                    class="flex w-full justify-center py-3 px-4 border border-transparent rounded-md
                         shadow-sm text-base font-bold text-white bg-sky-600
                         hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500
                         transition duration-300 ease-in-out cursor-pointer">
@@ -75,14 +82,19 @@
                                     let html = '';
                                     data.forEach(resort => {
                                         html += `
-                                            <label class="mr-4">
+                                            <label class="flex items-center space-x-1">
                                                 <input type="radio" name="ski_resort" value="${resort.id}">
-                                                ${resort.resort_name}
+                                                <span>${resort.resort_name}</span>
                                             </label>
                                         `;
                                     });
                                     skiResortOptions.innerHTML = html;
                                     skiResortContainer.style.display = 'block';  // 表示！
+                                    skiResortContainer.classList.add('transition-opacity', 'duration-300', 'opacity-0');
+                                    setTimeout(() => {
+                                    skiResortContainer.classList.remove('opacity-0');
+                                    skiResortContainer.classList.add('opacity-100');
+                                    }, 10);
                                 })
                                 .catch(error => {
                                     console.error('スキー場取得エラー:', error);
@@ -101,33 +113,44 @@
             <h2 class="text-xl font-bold mb-4 text-center">
                 検索結果（{{ lessons|length }}件）
             </h2>
-            <ul class="space-y-4">
+            <div class="space-y-4">
                 {% for lesson in lessons %}
-                    <li class="p-4 border rounded shadow-sm">
-                        <p><strong>日付:</strong> {{ lesson.lesson_date }}</p>
-                        <p><strong>都道府県:</strong> {{ lesson.prefecture.name }}</p>
-                        <p><strong>スキー場:</strong> {{ lesson.ski_resort.resort_name }}</p>
-                        <p><strong>レベル:</strong> {{ lesson.get_level_display }}</p>
-                        <p><strong>レッスン形態:</strong> {{ lesson.get_lesson_type_display }}</p>
-                        <p><strong>時間帯:</strong> {{ lesson.get_time_slot_display }}</p>
-                        <p><strong>インストラクター:</strong> {{ lesson.instructor.username }}</p>
+                    <div class="p-4 border rounded shadow-sm">
+                        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                            <dt class="font-semibold text-gray-700">レッスン日</dt>
+                            <dd class="text-gray-900">{{ lesson.lesson_date|date:"Y年m月d日" }}</dd>
+                            <dt class="font-semibold text-gray-700">都道府県</dt>
+                            <dd class="text-gray-900">{{ lesson.prefecture.name }}</dd>
+                            <dt class="font-semibold text-gray-700">スキー場</dt>
+                            <dd class="text-gray-900">{{ lesson.ski_resort.resort_name }}</dd>
+                            <dt class="font-semibold text-gray-700">種別</dt>
+                            <dd class="text-gray-900">{{ lesson.activity_type.display_name }}</dd>
+                            <dt class="font-semibold text-gray-700">レベル</dt>
+                            <dd class="text-gray-900">{{ lesson.get_level_display }}</dd>
+                            <dt class="font-semibold text-gray-700">レッスン形態</dt>
+                            <dd class="text-gray-900">{{ lesson.get_lesson_type_display }}</dd>
+                            <dt class="font-semibold text-gray-700">時間帯</dt>
+                            <dd class="text-gray-900">{{ lesson.get_time_slot_display }}</dd>
+                            <dt class="font-semibold text-gray-700">担当インストラクター</dt>
+                            <dd class="text-gray-900">{{ lesson.instructor.username }}</dd>
+                            <dt class="font-semibold text-gray-700">料金</dt>
+                            <dd class="text-gray-900">¥ {{ lesson.price|intcomma }}</dd>
+                        </dl>
 
-                        <div class="mt-2 text-sm text-gray-600">
-                            {% if lesson.activity_type.get_activity_name_display == "スキー" %}
-                                <p>午前: ¥{{ lesson.ski_morning_price }} / 午後: ¥{{ lesson.ski_afternoon_price }} / 1日: ¥{{ lesson.ski_full_day_price }}</p>
-                            {% else %}
-                                <p>午前: ¥{{ lesson.snowboard_morning_price }} / 午後: ¥{{ lesson.snowboard_afternoon_price }} / 1日: ¥{{ lesson.snowboard_full_day_price }}</p>
-                            {% endif %}
+                        <!--予約ボタン-->
+                        <div class="flex justify-end mt-4">
+                            <form method="POST" action="{% url 'lesson_confirm' lesson.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                    aria-label="このレッスンを予約する">
+                                    このレッスンを予約する
+                                </button>
+                            </form>
                         </div>
-
-                        <div class="mt-3">
-                            <a href="{% url 'lesson_confirm' lesson.id %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                                このレッスンを予約する
-                            </a>
-                        </div>
-                    </li>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         </div>
     {% elif request.GET %}
         <p class="text-center text-gray-600 mt-8">
