@@ -1,3 +1,4 @@
+from accounts_app.utils import store_login_or_signup_origin_path
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -7,6 +8,8 @@ from .models import CustomUser, InstructorProfile
 
 # 新規登録処理 受講者用
 def student_signup_view(request):
+
+    store_login_or_signup_origin_path(request)
     # 新規登録フォームが送られてきた時
     if request.method == 'POST':
         signup_form = StudentSignupForm(request.POST)
@@ -27,6 +30,8 @@ def student_signup_view(request):
 
 # 新規登録処理 インストラクター用
 def instructor_signup_view(request):
+
+    store_login_or_signup_origin_path(request)
     # 新規登録フォームが送られてきた時
     if request.method == 'POST':
         signup_form = InstructorSignupForm(request.POST)
@@ -47,6 +52,8 @@ def instructor_signup_view(request):
 
 # ログイン処理 - 受講者側
 def student_login_view(request):
+
+    store_login_or_signup_origin_path(request)
     # ログインフォームが送られてきた時
     if request.method == 'POST':
         login_form = LoginForm(request.POST)
@@ -69,6 +76,8 @@ def student_login_view(request):
 
 # ログイン処理 - インストラクター側
 def instructor_login_view(request):
+    
+    store_login_or_signup_origin_path(request)
     # ログインフォームが送られてきた時
     if request.method == 'POST':
         login_form = LoginForm(request.POST)
@@ -200,3 +209,19 @@ def instructor_setting(request):
         'instructor_profile_form': instructor_profile_form,
     }
     return render(request, 'accounts_app/instructor_setting.html', params)
+
+def about_view(request):
+    return render(request, 'common/about.html')
+
+def terms_view(request):
+    return render(request, 'common/terms.html')
+
+def privacy_view(request):
+    return render(request, 'common/privacy.html')
+
+def cancel_policy_view(request):
+    return render(request, 'common/cancel_policy.html')
+
+def contact_view(request):
+    return render(request, 'common/contact.html')
+

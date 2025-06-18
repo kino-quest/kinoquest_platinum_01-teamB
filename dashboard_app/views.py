@@ -1,13 +1,19 @@
 import logging
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from .forms import LessonDetailForm, LessonSearchForm
 from .models import ActivityChoices, LessonDetail, LessonPreference, SkiResort
+import stripe
 
 logger = logging.getLogger(__name__)
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # ダッシュボード - 受講者
 @login_required
@@ -136,15 +142,21 @@ def lesson_search(request):
     if form.is_valid():
         # フォームの入力から検索条件を取得
         lesson_date = form.cleaned_data['lesson_date']
+        prefecture = form.cleaned_data['prefecture']
         ski_resort = form.cleaned_data['ski_resort']
+        activity_type = form.cleaned_data['activity_type']
         level = form.cleaned_data['level']
         lesson_type = form.cleaned_data['lesson_type']
         time_slot = form.cleaned_data['time_slot']
 
         # 厳密一致でフィルター
-        lessons = LessonDetail.objects.select_related("activity_type").filter(
+        lessons = LessonDetail.objects.select_related(
+            "activity_type", "instructor", "prefecture", "ski_resort"
+        ).filter(
             lesson_date=lesson_date,
+            prefecture=prefecture,
             ski_resort=ski_resort,
+            activity_type=activity_type,
             level=level,
             lesson_type=lesson_type,
             time_slot=time_slot,
@@ -284,3 +296,49 @@ def cancel_lesson(request, lesson_id):
 
     lesson.delete()
     return redirect('instructor_history')
+
+@login_required
+@csrf_exempt
+def create_checkout_session(request, lesson_id):
+    lesson = get_object_or_404(LessonDetail, id=lesson_id)
+
+    # 仮に price 属性がないときは補完しておく
+    if not hasattr(lesson, 'price') or lesson.price is None:
+        lesson.price = get_lesson_price(lesson)
+    
+    # Stripe Checkout セッション作成
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{
+            'price_data': {
+                'currency': 'jpy',
+                'product_data': {
+                    'name': f"{lesson.lesson_date}のレッスン",
+                },
+                'unit_amount': int(lesson.price),
+            },
+            'quantity': 1,
+        }],
+        mode='payment',
+        success_url=request.build_absolute_uri(reverse('payment_success', args=[lesson.id])),
+        cancel_url=request.build_absolute_uri(reverse('payment_cancel', args=[lesson.id])),
+    )
+
+    return redirect(session.url, code=303)
+
+@login_required
+def payment_success(request, lesson_id):
+    print("成功！！！！！")
+    lesson = get_object_or_404(LessonDetail, id=lesson_id)
+    # ここで予約をDBに保存する処理
+    LessonPreference.objects.create(
+        student=request.user,
+        lesson_detail=lesson,
+        # status='confirmed'
+    )
+    return render(request, 'dashboard_app/payment_success.html')
+
+@login_required
+def payment_cancel(request):
+    print("キャンセル！！！！！！１")
+    return render(request, 'dashboard_app/payment_cancel.html')

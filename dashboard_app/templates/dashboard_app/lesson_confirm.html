@@ -28,7 +28,7 @@
         </dl>
         <!--予約確定ボタン-->
         <div class="flex justify-end mt-4">
-            <form method="post" action="{% url 'lesson_reserve' lesson.id %}">
+            <form method="post" action="{% url 'create_checkout_session' lesson.id %}">
                 {% csrf_token %}
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                     予約を確定する
