@@ -5,13 +5,14 @@
 {% block content %}
 
 <!-- Alpine.js コンテナ -->
-<div x-data="{ showModal: false, selectedPref: null }" class="max-w-4xl mx-auto mt-8 bg-white p-6 rounded-lg shadow">
+<div x-data="{ showModal: false, selectedPref: null }" 
+    class="max-w-4xl mx-auto mt-4 sm:mt-8 bg-white p-4 sm:p-6 rounded-lg shadow">
 
-    <h1 class="text-center text-2xl mb-6">レッスン履歴</h1>
+    <h1 class="text-center text-lg sm:text-2xl mb-4 sm:mb-6">レッスン履歴</h1>
 
     {% for lesson in lessons %}
         <div class="mb-6 border-b border-gray-200 pb-4">
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm sm:text-base">
                 <dt class="font-semibold text-gray-700">レッスン日</dt>
                 <dd class="text-gray-900">{{ lesson.lesson_date|date:"Y年m月d日" }}</dd>
 
@@ -57,7 +58,8 @@
                             <!-- キャンセルボタンでモーダル開く -->
                             <button type="button"
                                     @click="selectedPref = {{ pref.id }}; showModal = true"
-                                    class="ml-1 mt-2 block px-4 py-2 bg-red-500 text-white rounded cursor-pointer hover:bg-red-600">
+                                    class="ml-0 mt-2  w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded 
+                                    cursor-pointer hover:bg-red-600 text-sm sm:text-base">
                                 キャンセル
                             </button>
                         {% endfor %}
@@ -77,7 +79,7 @@
 
     <!-- モーダルウィンドウ -->
     <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center shadow-lg">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-11/12 sm:w-96">
             <h3 class="text-lg font-bold mb-4 text-gray-800">本当にキャンセルしますか？</h3>
             <p class="text-sm text-gray-600 mb-6">受講者がいます。この予約をキャンセルしてもよろしいですか？</p>
 
@@ -96,6 +98,7 @@
                 </form>
             </div>
         </div>
+        <!--/.bg-white-->
     </div>
     <!--/.showModal-->
 </div>

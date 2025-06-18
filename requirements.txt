@@ -1,7 +1,9 @@
 Django==5.2.1
 psycopg2-binary==2.9.10
 python-dotenv==1.1.0
-gunicorn==23.0.0 # 2024/08 latest
-pillow==11.2.1 # 2025/04 latest
+gunicorn==23.0.0
+pillow==11.2.1
 
-django-bootstrap5==25.1 # 2025/03 latest
+django-bootstrap5==25.1
+
+stripe

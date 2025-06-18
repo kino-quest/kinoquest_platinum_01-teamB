@@ -5,38 +5,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <title>スノトラ</title>
+    <title>{% block title %}スノトラ{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="icon" href="{% static 'images/favicon.png' %} " type="image/png">
   </head>
   <body class="flex flex-col min-h-screen">
-    <header class="header bg-blue-100 text-white p-4 flex items-center justify-between h-20 md:h-24">
-      <div class="header__logo-box flex items-center mr-8">
+    <header class="bg-blue-100 text-white px-4 py-3 flex items-center justify-between h-16 sm:h-20">
+      <div class="flex items-center">
         {% if request.user.is_authenticated %}
             {% if request.user.is_instructor %}
-            <a href="{% url 'instructor_dashboard' %}">
-                <img src="{% static 'images/logo.png' %}" class="header__logo h-32 w-auto" alt="スノトラのロゴ画像です" />
-            </a>
+              <a href="{% url 'instructor_dashboard' %}">
+                  <img src="{% static 'images/logo.png' %}" class="h-32 sm:h-24 w-auto" alt="スノトラのロゴ画像です" />
+              </a>
             {% elif request.user.is_student %}
-            <a href="{% url 'student_dashboard' %}">
-                <img src="{% static 'images/logo.png' %}" class="header__logo h-32 w-auto" alt="スノトラのロゴ画像です" />
+              <a href="{% url 'student_dashboard' %}">
+                  <img src="{% static 'images/logo.png' %}" class="h-32 sm:h-24 w-auto" alt="スノトラのロゴ画像です" />
+              </a>
+            {% endif %}
+
+        {% elif request.session.origin_path %}
+            <a href="{{ request.session.origin_path }}">
+              <img src="{% static 'images/logo.png' %}" class="h-32 sm:h-24 w-auto" alt="スノトラのロゴ画像です" />
             </a>
+            
+        {% else %}
+            {% if request.path == '/signup/instructor/' %}
+              <a href="{% url 'instructor_signup' %}">
+                  <img src="{% static 'images/logo.png' %}" class="h-32 sm:h-24 w-auto" alt="スノトラのロゴ画像です" />
+              </a>
+            {% elif request.path == '/login/instructor/' %}
+              <a href="{% url 'instructor_login' %}">
+                  <img src="{% static 'images/logo.png' %}" class="h-32 sm:h-24 w-auto" alt="スノトラのロゴ画像です" />
+              </a>
+            {% elif request.path == '/signup/student/' %}
+              <a href="{% url 'student_signup' %}">
+                  <img src="{% static 'images/logo.png' %}" class="h-32 sm:h-24 w-auto" alt="スノトラのロゴ画像です" />
+              </a>
+            {% elif request.path == '/login/student/' %}
+              <a href="{% url 'student_login' %}">
+                  <img src="{% static 'images/logo.png' %}" class="h-32 sm:h-24 w-auto" alt="スノトラのロゴ画像です" />
+              </a>
             {% endif %}
         {% endif %}
-    </div>
-      {% block header_extra %}{% endblock %}
+      </div>
+    {% block header_extra %}{% endblock %}
     </header>
     <main class="bg-gray-100 flex-grow">{% block content %}{% endblock %}</main>
-    <footer class="footer bg-blue-100 text-black-300 p-8">
-      <div class="footer__text-box max-w-7xl mx-auto text-center">
-        <ul class="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-8 text-sm">
-          <li class="hover:text-gray-500 transition duration-300 cursor-pointer">運営会社</li>
-          <li class="hover:text-gray-500 transition duration-300 cursor-pointer">利用規約</li>
-          <li class="hover:text-gray-500 transition duration-300 cursor-pointer">プライバシーポリシー</li>
-          <li class="hover:text-gray-500 transition duration-300 cursor-pointer">キャンセルポリシー</li>
-          <li class="hover:text-gray-500 transition duration-300 cursor-pointer">お問いわせ</li>
-        </ul>
-      </div>
-    </footer>
+
+    {% include "common/footer.html" %}
   </body>
 </html>

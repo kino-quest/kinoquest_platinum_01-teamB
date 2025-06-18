@@ -24,3 +24,20 @@ body {
 .fc-day-sat .fc-daygrid-day-number {
   color: blue;
 }
+
+.fc-toolbar-title {
+  font-size: 1.25rem; /* Tailwindの text-xl 相当 */
+  font-weight: 600;
+}
+
+.fc .fc-button {
+  @apply text-sm px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-600;
+}
+
+@media (max-width: 768px) {
+  .fc .fc-header-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

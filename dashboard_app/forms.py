@@ -114,6 +114,13 @@ class LessonSearchForm(forms.Form):
         widget=forms.RadioSelect(attrs={'class': 'flex space-x-4'})
     )
 
+    activity_type = forms.ModelChoiceField(
+        queryset=ActivityType.objects.all(),
+        label="アクティビティ",
+        widget=forms.RadioSelect(attrs={'class': 'flex space-x-4'}),
+        empty_label=None
+    )
+
     level = forms.ChoiceField(
         choices=[('', '選んでください')] + list(LessonDetail._meta.get_field('level').choices),
         label="レベル",
